@@ -4,17 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slate | Log your films</title>
+    <title>Slate</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: #121212;
             color: #ffffff;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
+            padding-top: 15vh;
             margin: 0;
         }
 
@@ -23,9 +22,9 @@
             padding: 40px;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-            text-align: center;
             width: 100%;
             max-width: 400px;
+            position: relative;
         }
 
         h1 {
@@ -33,12 +32,14 @@
             font-weight: 500;
             margin-bottom: 24px;
             letter-spacing: 4px;
+            text-align: center;
         }
 
         input {
-            width: 90%;
+            width: 100%;
+            box-sizing: border-box;
             padding: 12px;
-            margin-bottom: 16px;
+            margin-bottom: 8px;
             background: #2c2c2c;
             border: 1px solid #333;
             color: white;
@@ -50,27 +51,75 @@
             border-color: #555;
         }
 
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #ffffff;
-            color: #000000;
-            font-weight: 600;
-            border: none;
+        .dropdown {
+            position: absolute;
+            width: calc(100% - 80px);
+            background: #2c2c2c;
             border-radius: 4px;
-            cursor: pointer;
-            transition: 0.2s ease;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.8);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 10;
+            display: none;
         }
 
-        button:hover {
-            background: #e0e0e0;
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #333;
+            transition: 0.2s;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: #3a3a3a;
+        }
+
+        .dropdown-item img {
+            width: 40px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 2px;
+            margin-right: 12px;
+            background: #121212;
+        }
+
+        .dropdown-item .info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dropdown-item .title {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .dropdown-item .year {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 4px;
         }
 
         .status {
             margin-top: 16px;
             font-size: 14px;
-            color: #aaa;
+            text-align: center;
             min-height: 20px;
+            color: #aaa;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 3px;
         }
     </style>
 </head>
@@ -78,46 +127,110 @@
 <body>
     <div class="container">
         <h1>SLATE</h1>
-        <input type="text" id="movieSearch" placeholder="Search for a film (e.g. Inception)...">
-        <button onclick="logFilm()">Log Film</button>
+        <input type="text" id="movieSearch" placeholder="Search for a film..." oninput="debounceSearch()"
+            autocomplete="off">
+        <div id="dropdown" class="dropdown"></div>
         <div id="status" class="status"></div>
     </div>
 
     <script>
-        // Pointing directly to your Azure Function backend in Central India
         const API_BASE = "https://func-slate-app-wijb3v.azurewebsites.net/api";
+        let debounceTimer;
 
-        async function logFilm() {
-            const searchInput = document.getElementById('movieSearch').value;
+        function debounceSearch() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(searchTMDB, 500);
+        }
+
+        async function searchTMDB() {
+            const query = document.getElementById('movieSearch').value.trim();
+            const dropdown = document.getElementById('dropdown');
             const statusEl = document.getElementById('status');
 
-            if (!searchInput) return;
+            if (query.length < 2) {
+                dropdown.style.display = 'none';
+                statusEl.innerText = "";
+                return;
+            }
 
-            statusEl.innerText = "Connecting to cloud backend...";
+            statusEl.innerText = "Searching TMDB...";
+
+            try {
+                const response = await fetch(`${API_BASE}/searchFilms?query=${encodeURIComponent(query)}`);
+                if (!response.ok) throw new Error("Search failed");
+
+                const data = await response.json();
+                const results = data.results || [];
+
+                dropdown.innerHTML = '';
+                if (results.length === 0) {
+                    dropdown.style.display = 'none';
+                    statusEl.innerText = "No films found.";
+                    return;
+                }
+
+                results.slice(0, 5).forEach(film => {
+                    const year = film.release_date ? film.release_date.split('-')[0] : 'Unknown';
+                    const posterPath = film.poster_path ? `https://image.tmdb.org/t/p/w92${film.poster_path}` : '';
+
+                    const item = document.createElement('div');
+                    item.className = 'dropdown-item';
+                    item.onclick = () => logSelectedFilm(film.id, film.title, year);
+
+                    item.innerHTML = `
+                        <img src="${posterPath}" alt="Poster" onerror="this.style.display='none'">
+                        <div class="info">
+                            <span class="title">${film.title}</span>
+                            <span class="year">${year}</span>
+                        </div>
+                    `;
+                    dropdown.appendChild(item);
+                });
+
+                dropdown.style.display = 'block';
+                statusEl.innerText = "";
+            } catch (error) {
+                statusEl.innerText = "Error connecting to search backend.";
+                statusEl.style.color = "#f87171";
+            }
+        }
+
+        async function logSelectedFilm(filmId, filmTitle, year) {
+            const statusEl = document.getElementById('status');
+            const dropdown = document.getElementById('dropdown');
+
+            dropdown.style.display = 'none';
+            document.getElementById('movieSearch').value = filmTitle;
+
+            statusEl.innerText = "Logging film to Cosmos DB...";
             statusEl.style.color = "#aaa";
 
             try {
-                // This makes the ACTUAL network request to your Node.js server
                 const response = await fetch(`${API_BASE}/log`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        title: searchInput,
-                        userId: "user_123" // Hardcoded for lab demo purposes
+                        filmId: filmId.toString(),
+                        title: filmTitle,
+                        year: year,
+                        userId: "user_123"
                     })
                 });
 
                 if (response.ok) {
-                    statusEl.innerText = `Success: "${searchInput}" logged to Cosmos DB & Queue!`;
-                    statusEl.style.color = "#4ade80"; // Green success text
-                    document.getElementById('movieSearch').value = '';
+                    statusEl.innerText = `Success: "${filmTitle}" logged!`;
+                    statusEl.style.color = "#4ade80";
+                    setTimeout(() => {
+                        document.getElementById('movieSearch').value = '';
+                        statusEl.innerText = '';
+                    }, 3000);
                 } else {
                     const errText = await response.text();
                     statusEl.innerText = `Backend Error: ${errText}`;
-                    statusEl.style.color = "#f87171"; // Red error text
+                    statusEl.style.color = "#f87171";
                 }
             } catch (error) {
-                statusEl.innerText = "Network Error: Could not reach the Azure Function.";
+                statusEl.innerText = "Network Error logging film.";
                 statusEl.style.color = "#f87171";
             }
         }
