@@ -1,0 +1,10 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "TMDB_API_KEY": "your_tmdb_api_key_here",
+    "COSMOS_CONNECTION_STRING": "your_cosmos_connection_string_here",
+    "STORAGE_CONNECTION_STRING": "your_azure_storage_connection_string_here"
+  }
+}

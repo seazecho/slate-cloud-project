@@ -1,0 +1,21 @@
+{
+  "name": "slate-backend",
+  "version": "1.0.0",
+  "description": "Azure Functions backend for Slate Cloud project (Node.js v4 programming model)",
+  "main": "src/functions/index.js",
+  "scripts": {
+    "start": "func start",
+    "test": "echo \"No test specified\" && exit 0"
+  },
+  "dependencies": {
+    "@azure/cosmos": "^4.2.0",
+    "@azure/functions": "^4.5.1",
+    "@azure/storage-queue": "^12.24.0"
+  },
+  "devDependencies": {
+    "azure-functions-core-tools": "^4.0.5907"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
