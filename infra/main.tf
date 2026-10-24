@@ -31,8 +31,8 @@ resource "random_string" "suffix" {
 # 1. Resource Group
 # -----------------------------------------------------------------------------
 resource "azurerm_resource_group" "rg" {
-  name     = "rg-slate-app"
-  location = "centralindia"
+  name     = "rg-slate-app-v2"
+  location = "eastus2"
 
   tags = {
     project = "slate-cloud-project"
