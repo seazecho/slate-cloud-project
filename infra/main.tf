@@ -20,7 +20,6 @@ provider "azurerm" {
   }
 }
 
-# Generate a random suffix for globally unique resource names
 resource "random_string" "suffix" {
   length  = 6
   special = false
@@ -28,11 +27,11 @@ resource "random_string" "suffix" {
 }
 
 # -----------------------------------------------------------------------------
-# 1. Resource Group
+# 1. Resource Group (In India)
 # -----------------------------------------------------------------------------
 resource "azurerm_resource_group" "rg" {
-  name     = "rg-slate-app-v2"
-  location = "eastus2"
+  name     = "rg-slate-app-v3"
+  location = "centralindia"
 
   tags = {
     project = "slate-cloud-project"
@@ -40,7 +39,7 @@ resource "azurerm_resource_group" "rg" {
 }
 
 # -----------------------------------------------------------------------------
-# 2. Storage Account & Storage Queue
+# 2. Storage Account & Storage Queue (In India)
 # -----------------------------------------------------------------------------
 resource "azurerm_storage_account" "sa" {
   name                     = "stslateapp${random_string.suffix.result}"
@@ -48,8 +47,6 @@ resource "azurerm_storage_account" "sa" {
   location                 = azurerm_resource_group.rg.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
-
-  tags = azurerm_resource_group.rg.tags
 }
 
 resource "azurerm_storage_queue" "activity_events" {
@@ -58,7 +55,7 @@ resource "azurerm_storage_queue" "activity_events" {
 }
 
 # -----------------------------------------------------------------------------
-# 3. Cosmos DB Account (Serverless), SQL API Database, and Containers
+# 3. Cosmos DB (Serverless) (In India)
 # -----------------------------------------------------------------------------
 resource "azurerm_cosmosdb_account" "cosmos" {
   name                = "cosmos-slate-app-${random_string.suffix.result}"
@@ -79,8 +76,6 @@ resource "azurerm_cosmosdb_account" "cosmos" {
     location          = azurerm_resource_group.rg.location
     failover_priority = 0
   }
-
-  tags = azurerm_resource_group.rg.tags
 }
 
 resource "azurerm_cosmosdb_sql_database" "slate_db" {
@@ -106,7 +101,7 @@ resource "azurerm_cosmosdb_sql_container" "feed" {
 }
 
 # -----------------------------------------------------------------------------
-# 4. Windows Function App (Consumption Plan, Node.js 18)
+# 4. Function App (In India)
 # -----------------------------------------------------------------------------
 resource "azurerm_service_plan" "asp" {
   name                = "asp-slate-app"
@@ -114,8 +109,6 @@ resource "azurerm_service_plan" "asp" {
   location            = azurerm_resource_group.rg.location
   os_type             = "Windows"
   sku_name            = "Y1"
-
-  tags = azurerm_resource_group.rg.tags
 }
 
 resource "azurerm_windows_function_app" "function_app" {
@@ -131,72 +124,34 @@ resource "azurerm_windows_function_app" "function_app" {
       node_version = "~18"
     }
   }
-
-  tags = azurerm_resource_group.rg.tags
 }
 
 # -----------------------------------------------------------------------------
-# 5. Azure Static Web App (Free Tier)
+# 5. Static Web App (Forced to East Asia to bypass restrictions)
 # -----------------------------------------------------------------------------
 resource "azurerm_static_web_app" "swa" {
   name                = "swa-slate-app-${random_string.suffix.result}"
   resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
+  location            = "eastasia"
   sku_tier            = "Free"
   sku_size            = "Free"
-
-  tags = azurerm_resource_group.rg.tags
 }
 
 # -----------------------------------------------------------------------------
 # Outputs
 # -----------------------------------------------------------------------------
 output "resource_group_name" {
-  description = "The name of the Azure Resource Group"
-  value       = azurerm_resource_group.rg.name
+  value = azurerm_resource_group.rg.name
 }
-
 output "storage_account_name" {
-  description = "The name of the Storage Account"
-  value       = azurerm_storage_account.sa.name
+  value = azurerm_storage_account.sa.name
 }
-
-output "storage_queue_name" {
-  description = "The name of the Storage Queue"
-  value       = azurerm_storage_queue.activity_events.name
-}
-
 output "cosmosdb_account_name" {
-  description = "The name of the Cosmos DB Account"
-  value       = azurerm_cosmosdb_account.cosmos.name
+  value = azurerm_cosmosdb_account.cosmos.name
 }
-
-output "cosmosdb_database_name" {
-  description = "The name of the Cosmos DB SQL Database"
-  value       = azurerm_cosmosdb_sql_database.slate_db.name
-}
-
-output "cosmosdb_logs_container_name" {
-  description = "The name of the Cosmos DB logs container"
-  value       = azurerm_cosmosdb_sql_container.logs.name
-}
-
-output "cosmosdb_feed_container_name" {
-  description = "The name of the Cosmos DB feed container"
-  value       = azurerm_cosmosdb_sql_container.feed.name
-}
-
-output "service_plan_name" {
-  description = "The name of the App Service Plan"
-  value       = azurerm_service_plan.asp.name
-}
-
 output "function_app_name" {
-  description = "The name of the Windows Function App"
-  value       = azurerm_windows_function_app.function_app.name
+  value = azurerm_windows_function_app.function_app.name
 }
-
 output "static_web_app_name" {
-  description = "The name of the Azure Static Web App"
-  value       = azurerm_static_web_app.swa.name
+  value = azurerm_static_web_app.swa.name
 }
