@@ -26,13 +26,9 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Azure Login
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-
     - name: Deploy to Azure Functions
       uses: Azure/functions-action@v1
       with:
         app-name: 'func-slate-app-wijb3v'
         package: ./backend
+        publish-profile: ${{ secrets.PUBLISH_PROFILE }}
