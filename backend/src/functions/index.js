@@ -121,7 +121,7 @@ app.http('searchFilms', {
 // -----------------------------------------------------------------------------
 // 2. logFilm (HTTP POST)
 // -----------------------------------------------------------------------------
-app.http('logFilm', {
+app.http('log', {
   methods: ['POST'],
   authLevel: 'anonymous',
   handler: async (request, context) => {
