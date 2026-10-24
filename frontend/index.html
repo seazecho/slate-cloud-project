@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slate — Film Social & Activity Log</title>
-    <!-- Google Fonts for crisp modern typography -->
+    <title>Slate — Film Social Feed</title>
+    <!-- Modern Sans-Serif Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -15,19 +15,18 @@
             --bg-color: #121212;
             --surface-color: #1e1e1e;
             --surface-alt: #262626;
-            --surface-hover: #323232;
+            --surface-hover: #2f2f2f;
             --border-color: rgba(255, 255, 255, 0.08);
             --border-focus: rgba(255, 255, 255, 0.22);
             --accent-green: #4ade80;
-            --accent-green-dark: #22c55e;
+            --accent-green-hover: #22c55e;
             --accent-gold: #fbbf24;
-            --accent-blue: #38bdf8;
             --text-primary: #ffffff;
             --text-secondary: #a1a1aa;
             --text-muted: #71717a;
             --radius-md: 8px;
             --radius-lg: 12px;
-            --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.45);
+            --shadow-card: 0 6px 20px rgba(0, 0, 0, 0.5);
         }
 
         * {
@@ -44,20 +43,20 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 36px 16px 80px;
+            padding: 28px 14px 80px;
             -webkit-font-smoothing: antialiased;
         }
 
         /* -------------------------------------------------------------------------
-           Header & Top Bar
+           Header & Branding
         -------------------------------------------------------------------------- */
         .app-header {
             width: 100%;
-            max-width: 520px;
+            max-width: 480px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 24px;
+            margin-bottom: 22px;
             padding: 0 4px;
         }
 
@@ -72,7 +71,7 @@
         .brand-logo {
             width: 32px;
             height: 32px;
-            background: linear-gradient(135deg, #27272a, #18181b);
+            background: linear-gradient(135deg, #27272a, #141416);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             display: flex;
@@ -82,8 +81,8 @@
         }
 
         .brand-logo svg {
-            width: 18px;
-            height: 18px;
+            width: 17px;
+            height: 17px;
             fill: currentColor;
         }
 
@@ -93,13 +92,13 @@
             letter-spacing: 3px;
         }
 
-        .group-pill {
+        .user-pill {
             display: flex;
             align-items: center;
             gap: 8px;
             background: var(--surface-color);
             border: 1px solid var(--border-color);
-            padding: 5px 12px 5px 6px;
+            padding: 4px 12px 4px 6px;
             border-radius: 999px;
             font-size: 13px;
             font-weight: 500;
@@ -111,7 +110,7 @@
             height: 24px;
             border-radius: 50%;
             background: linear-gradient(135deg, #4ade80, #10b981);
-            color: #000;
+            color: #052e16;
             font-weight: 700;
             font-size: 11px;
             display: flex;
@@ -120,38 +119,47 @@
         }
 
         /* -------------------------------------------------------------------------
-           Main Layout & Logger Container
+           Feed Layout Container
         -------------------------------------------------------------------------- */
-        .main-wrapper {
+        .feed-container {
             width: 100%;
-            max-width: 520px;
+            max-width: 480px;
             display: flex;
             flex-direction: column;
-            gap: 28px;
+            gap: 22px;
         }
 
+        /* -------------------------------------------------------------------------
+           Unified Logging Module
+        -------------------------------------------------------------------------- */
         .logger-card {
             background: var(--surface-color);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
-            padding: 24px;
+            padding: 20px;
             box-shadow: var(--shadow-card);
             position: relative;
         }
 
-        .logger-heading {
-            font-size: 12px;
+        .logger-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .logger-title {
+            font-size: 13px;
             font-weight: 600;
-            letter-spacing: 1.5px;
+            letter-spacing: 1.2px;
             text-transform: uppercase;
             color: var(--text-secondary);
-            margin-bottom: 14px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .logger-heading-dot {
+        .logger-title-dot {
             width: 6px;
             height: 6px;
             border-radius: 50%;
@@ -180,8 +188,8 @@
 
         .search-icon {
             color: var(--text-muted);
-            width: 18px;
-            height: 18px;
+            width: 17px;
+            height: 17px;
             margin-right: 10px;
             flex-shrink: 0;
         }
@@ -191,7 +199,7 @@
             background: transparent;
             border: none;
             outline: none;
-            padding: 13px 0;
+            padding: 12px 0;
             color: var(--text-primary);
             font-size: 14px;
             font-family: inherit;
@@ -221,7 +229,7 @@
         /* TMDB Dropdown */
         .dropdown {
             position: absolute;
-            top: calc(100% + 8px);
+            top: calc(100% + 6px);
             left: 0;
             right: 0;
             background: #252525;
@@ -237,7 +245,7 @@
         .dropdown-item {
             display: flex;
             align-items: center;
-            padding: 10px 14px;
+            padding: 10px 12px;
             cursor: pointer;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             transition: background 0.15s ease;
@@ -252,14 +260,13 @@
         }
 
         .dropdown-item-poster {
-            width: 38px;
-            height: 56px;
+            width: 36px;
+            height: 52px;
             object-fit: cover;
             border-radius: 4px;
             margin-right: 12px;
             background: #141414;
             flex-shrink: 0;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
         }
 
         .dropdown-item-info {
@@ -271,7 +278,7 @@
         }
 
         .dropdown-item-title {
-            font-size: 14px;
+            font-size: 13.5px;
             font-weight: 500;
             color: var(--text-primary);
             white-space: nowrap;
@@ -296,53 +303,37 @@
             opacity: 1;
         }
 
-        .status-msg {
-            margin-top: 10px;
-            font-size: 13px;
-            min-height: 18px;
-            color: var(--text-muted);
-            text-align: center;
-        }
-
-        /* -------------------------------------------------------------------------
-           Log Module (Locked Film Selection & Tabs)
-        -------------------------------------------------------------------------- */
+        /* Unified Log Module */
         .log-module {
             display: none;
-            margin-top: 20px;
-            padding-top: 20px;
+            margin-top: 18px;
+            padding-top: 18px;
             border-top: 1px solid var(--border-color);
-            animation: fadeInSlideDown 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: slideDownFade 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        @keyframes fadeInSlideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-8px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        @keyframes slideDownFade {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .selected-movie-header {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
             background: var(--surface-alt);
-            padding: 12px 14px;
+            padding: 10px 12px;
             border-radius: var(--radius-md);
             border: 1px solid var(--border-color);
-            margin-bottom: 18px;
+            margin-bottom: 16px;
         }
 
-        .selected-poster {
-            width: 48px;
-            height: 72px;
+        .selected-poster-thumb {
+            width: 44px;
+            height: 66px;
             object-fit: cover;
-            border-radius: 6px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
             background: #141414;
             flex-shrink: 0;
         }
@@ -350,18 +341,18 @@
         .selected-details {
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 2px;
             flex-grow: 1;
         }
 
         .selected-title {
-            font-size: 15px;
+            font-size: 14.5px;
             font-weight: 600;
             color: var(--text-primary);
         }
 
         .selected-year {
-            font-size: 13px;
+            font-size: 12.5px;
             color: var(--text-muted);
         }
 
@@ -370,10 +361,10 @@
             border: 1px solid var(--border-color);
             color: var(--text-secondary);
             font-size: 12px;
-            padding: 6px 10px;
+            padding: 5px 9px;
             border-radius: 6px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
         }
 
         .change-selection-btn:hover {
@@ -382,116 +373,13 @@
             background: rgba(255, 255, 255, 0.05);
         }
 
-        /* Tabs Switcher: Note vs. Formal Review */
-        .module-tab-switcher {
-            display: flex;
-            background: var(--surface-alt);
-            padding: 4px;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-color);
-            margin-bottom: 18px;
-            gap: 4px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 8px 12px;
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            font-size: 13px;
-            font-weight: 600;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .tab-btn:hover {
-            color: var(--text-secondary);
-        }
-
-        .tab-btn.active {
-            background: var(--surface-color);
-            color: var(--text-primary);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-        }
-
-        .tab-btn svg {
-            width: 14px;
-            height: 14px;
-        }
-
-        /* Tab Content */
-        .tab-pane {
-            display: none;
-            animation: fadeIn 0.2s ease;
-        }
-
-        .tab-pane.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        /* Note Section: Privacy Toggle */
-        .note-privacy-row {
+        /* 5-Star Rating Row */
+        .star-rating-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             padding: 0 2px;
-        }
-
-        .privacy-label {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-
-        .privacy-toggle-btn {
-            background: var(--surface-alt);
-            border: 1px solid var(--border-color);
-            border-radius: 999px;
-            padding: 5px 12px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            color: var(--accent-green);
-            transition: all 0.15s ease;
-        }
-
-        .privacy-toggle-btn.is-private {
-            color: #fca5a5;
-            border-color: rgba(239, 68, 68, 0.3);
-            background: rgba(239, 68, 68, 0.08);
-        }
-
-        .privacy-toggle-btn svg {
-            width: 12px;
-            height: 12px;
-        }
-
-        /* Star Rating in Formal Review */
-        .rating-section {
-            margin-bottom: 16px;
-        }
-
-        .rating-header-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 8px;
         }
 
         .rating-label {
@@ -500,43 +388,20 @@
             color: var(--text-secondary);
         }
 
-        .rating-label span.req {
-            color: var(--accent-gold);
-        }
-
-        .rating-feedback-text {
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--accent-gold);
-            min-height: 16px;
-        }
-
         .star-picker {
             display: inline-flex;
-            gap: 6px;
+            gap: 4px;
             background: var(--surface-alt);
-            padding: 8px 14px;
+            padding: 6px 10px;
             border-radius: var(--radius-md);
             border: 1px solid var(--border-color);
-            transition: border-color 0.2s ease;
-        }
-
-        .star-picker.invalid {
-            border-color: #ef4444;
-            animation: shake 0.3s ease;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-4px); }
-            40%, 80% { transform: translateX(4px); }
         }
 
         .star-btn {
             background: transparent;
             border: none;
             cursor: pointer;
-            font-size: 22px;
+            font-size: 20px;
             line-height: 1;
             color: #4b5563;
             transition: transform 0.15s ease, color 0.15s ease;
@@ -550,41 +415,91 @@
         .star-btn.active,
         .star-btn.hovered {
             color: var(--accent-gold);
-            text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+            text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
         }
 
-        /* Textareas */
-        .module-textarea {
+        /* Review / Note Textarea */
+        .log-textarea {
             width: 100%;
             background: var(--surface-alt);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
             padding: 12px 14px;
             color: var(--text-primary);
-            font-size: 14px;
+            font-size: 13.5px;
             font-family: inherit;
             resize: vertical;
-            min-height: 80px;
+            min-height: 75px;
             outline: none;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
             transition: border-color 0.2s ease;
             line-height: 1.5;
         }
 
-        .module-textarea:focus {
+        .log-textarea:focus {
             border-color: var(--border-focus);
         }
 
-        .module-textarea::placeholder {
+        .log-textarea::placeholder {
             color: var(--text-muted);
         }
 
-        /* Action Bar */
+        /* Bottom Row: Toggle Switch + Publish */
+        .module-bottom-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        /* Privacy Toggle Switch */
+        .privacy-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .switch-track {
+            width: 38px;
+            height: 22px;
+            background: #374151;
+            border-radius: 999px;
+            position: relative;
+            transition: background 0.2s ease;
+        }
+
+        .switch-track.active {
+            background: var(--accent-green);
+        }
+
+        .switch-thumb {
+            width: 18px;
+            height: 18px;
+            background: #ffffff;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .switch-track.active .switch-thumb {
+            transform: translateX(16px);
+        }
+
+        .privacy-label-text {
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
         .module-actions {
             display: flex;
             align-items: center;
-            justify-content: flex-end;
-            gap: 12px;
+            gap: 8px;
         }
 
         .btn-cancel {
@@ -594,7 +509,7 @@
             font-size: 13px;
             font-weight: 500;
             cursor: pointer;
-            padding: 8px 14px;
+            padding: 8px 12px;
             border-radius: var(--radius-md);
             transition: color 0.15s ease;
         }
@@ -608,7 +523,7 @@
             color: #052e16;
             border: none;
             border-radius: var(--radius-md);
-            padding: 9px 20px;
+            padding: 8px 18px;
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
@@ -616,11 +531,11 @@
             align-items: center;
             gap: 6px;
             transition: all 0.2s ease;
-            box-shadow: 0 3px 10px rgba(74, 222, 128, 0.25);
+            box-shadow: 0 2px 8px rgba(74, 222, 128, 0.25);
         }
 
         .btn-publish:hover {
-            background: var(--accent-green-dark);
+            background: var(--accent-green-hover);
             color: #000;
             transform: translateY(-1px);
         }
@@ -635,97 +550,58 @@
             transform: none;
         }
 
+        .status-msg {
+            margin-top: 10px;
+            font-size: 12.5px;
+            min-height: 16px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
         /* -------------------------------------------------------------------------
-           Social Feed Section (Tight-Knit Group Feed)
+           Instagram-Style Feed Posts
         -------------------------------------------------------------------------- */
-        .feed-section {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .feed-header-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
-        }
-
-        .feed-header-row h2 {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        .group-tag {
-            font-size: 11px;
-            color: var(--accent-green);
-            background: rgba(74, 222, 128, 0.1);
-            padding: 3px 8px;
-            border-radius: 999px;
-            font-weight: 500;
-        }
-
         #feedList {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 20px;
         }
 
-        /* -------------------------------------------------------------------------
-           Feed Card (Tight-Knit Social Cards)
-        -------------------------------------------------------------------------- */
-        .feed-card {
+        .insta-card {
             background: var(--surface-color);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
-            padding: 18px 20px;
+            overflow: hidden;
             box-shadow: var(--shadow-card);
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            transition: border-color 0.2s ease;
             position: relative;
         }
 
-        .feed-card:hover {
-            border-color: rgba(255, 255, 255, 0.12);
+        .insta-card.optimistic-entry {
+            animation: instaSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .feed-card.optimistic-entry {
-            animation: optimisticSlideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            border-left: 3px solid var(--accent-green);
+        @keyframes instaSlideIn {
+            from { opacity: 0; transform: translateY(-12px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes optimisticSlideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-14px) scale(0.98);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        /* Card Header */
-        .feed-card-header {
+        /* 1. Header */
+        .insta-header {
+            padding: 12px 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
-        .feed-user-meta {
+        .insta-user-meta {
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .feed-avatar {
+        .insta-avatar {
             width: 34px;
             height: 34px;
             border-radius: 50%;
@@ -740,184 +616,117 @@
             flex-shrink: 0;
         }
 
-        .feed-user-details {
+        .insta-user-info {
             display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .feed-username-row {
-            display: flex;
-            align-items: center;
+            align-items: baseline;
             gap: 6px;
         }
 
-        .feed-username {
-            font-size: 14px;
+        .insta-username {
+            font-size: 13.5px;
             font-weight: 600;
             color: var(--text-primary);
         }
 
-        .entry-badge {
-            font-size: 10px;
-            font-weight: 600;
-            padding: 2px 6px;
-            border-radius: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .insta-dot {
+            color: var(--text-muted);
+            font-size: 12px;
         }
 
-        .entry-badge.review-badge {
-            background: rgba(251, 191, 36, 0.12);
-            color: var(--accent-gold);
-        }
-
-        .entry-badge.note-badge {
-            background: rgba(56, 189, 248, 0.12);
-            color: var(--accent-blue);
-        }
-
-        .entry-badge.private-badge {
-            background: rgba(239, 68, 68, 0.12);
-            color: #fca5a5;
-        }
-
-        .feed-time {
+        .insta-time {
             font-size: 12px;
             color: var(--text-muted);
         }
 
-        /* Card Body */
-        .feed-card-body {
+        .insta-options-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            font-size: 14px;
             display: flex;
-            gap: 14px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: var(--radius-md);
-            padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            align-items: center;
         }
 
-        .feed-movie-poster {
-            width: 72px;
-            height: 108px;
+        .insta-options-btn:hover {
+            color: var(--text-primary);
+        }
+
+        /* 2. Media: Full-Width Prominent Poster */
+        .insta-media-container {
+            width: 100%;
+            background: #0d0d0d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .insta-poster-img {
+            width: 100%;
+            max-height: 520px;
             object-fit: cover;
-            border-radius: 6px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
-            background: #141414;
-            flex-shrink: 0;
+            display: block;
+            transition: opacity 0.2s ease;
         }
 
-        .feed-movie-poster-fallback {
-            width: 72px;
-            height: 108px;
-            border-radius: 6px;
-            background: linear-gradient(135deg, #262626, #161616);
+        .insta-poster-fallback {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(135deg, #1f1f23, #121214);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 4px;
-            padding: 6px;
-            text-align: center;
+            gap: 8px;
             color: var(--text-muted);
-            font-size: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
-            flex-shrink: 0;
-            border: 1px solid var(--border-color);
+            padding: 20px;
+            text-align: center;
         }
 
-        .feed-movie-poster-fallback svg {
-            width: 20px;
-            height: 20px;
+        .insta-poster-fallback svg {
+            width: 36px;
+            height: 36px;
             color: var(--accent-green);
         }
 
-        .feed-content-col {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            flex-grow: 1;
-            overflow: hidden;
-        }
-
-        .feed-movie-heading {
-            display: flex;
-            align-items: baseline;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        .feed-movie-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .feed-movie-year {
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-
-        .feed-star-row {
-            display: flex;
-            align-items: center;
-            gap: 2px;
-            color: var(--accent-gold);
+        .insta-poster-fallback span {
             font-size: 14px;
-            margin: 1px 0 3px;
-        }
-
-        .feed-star-row .empty {
-            color: #374151;
-        }
-
-        .feed-body-text {
-            font-size: 13.5px;
-            color: #d1d5db;
-            line-height: 1.5;
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-
-        .feed-default-msg {
-            font-size: 13px;
+            font-weight: 500;
             color: var(--text-secondary);
-            font-style: italic;
         }
 
-        /* -------------------------------------------------------------------------
-           Card Footer: Read Receipts & Comment (NO LIKE BUTTONS)
-        -------------------------------------------------------------------------- */
-        .feed-card-footer {
+        /* 3. Action Bar: Seen By + Comment Icon */
+        .insta-action-bar {
+            padding: 10px 16px 6px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding-top: 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        /* Read Receipts UI */
-        .read-receipts {
+        .insta-seen-by {
             display: flex;
             align-items: center;
-            gap: 8px;
-            color: var(--text-muted);
-            font-size: 12px;
+            gap: 7px;
         }
 
-        .read-receipts-icon {
-            width: 15px;
-            height: 15px;
+        .insta-eye-icon {
+            width: 16px;
+            height: 16px;
             color: var(--text-muted);
             flex-shrink: 0;
         }
 
-        .read-avatars-stack {
+        .insta-avatar-stack {
             display: flex;
             align-items: center;
         }
 
-        .read-avatar-micro {
+        .insta-micro-avatar {
             width: 18px;
             height: 18px;
             border-radius: 50%;
@@ -929,43 +738,157 @@
             font-size: 9px;
             font-weight: 700;
             color: #ffffff;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
         }
 
-        .read-avatar-micro:first-child {
+        .insta-micro-avatar:first-child {
             margin-left: 0;
         }
 
-        .read-text {
-            font-size: 11.5px;
-            color: #888888;
+        .insta-seen-text {
+            font-size: 12px;
+            color: var(--text-muted);
         }
 
-        /* Comment Button */
-        .comment-btn {
+        .insta-comment-icon-btn {
             background: transparent;
             border: none;
             color: var(--text-secondary);
-            font-size: 12.5px;
-            font-weight: 500;
             cursor: pointer;
-            display: inline-flex;
+            display: flex;
             align-items: center;
             gap: 5px;
-            padding: 4px 8px;
+            padding: 5px 6px;
             border-radius: 6px;
-            transition: all 0.15s ease;
+            font-size: 12.5px;
+            font-weight: 500;
+            transition: color 0.15s ease, background 0.15s ease;
             font-family: inherit;
         }
 
-        .comment-btn:hover {
+        .insta-comment-icon-btn:hover {
             color: var(--text-primary);
             background: rgba(255, 255, 255, 0.05);
         }
 
-        .comment-btn svg {
-            width: 15px;
-            height: 15px;
+        .insta-comment-icon-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* 4. Caption Area */
+        .insta-caption-area {
+            padding: 0 16px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .insta-rating-stars {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            color: var(--accent-gold);
+            font-size: 13px;
+            margin-bottom: 2px;
+        }
+
+        .insta-rating-stars .empty {
+            color: #374151;
+        }
+
+        .insta-film-title-row {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .insta-caption-text {
+            font-size: 13.5px;
+            line-height: 1.45;
+            color: #d4d4d8;
+            word-break: break-word;
+        }
+
+        .insta-caption-username {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-right: 6px;
+        }
+
+        /* 5. Local Interactive Comments List & Input Field */
+        .insta-comments-section {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 10px 16px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .insta-comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .insta-comment-item {
+            font-size: 13px;
+            line-height: 1.4;
+            color: #d1d5db;
+        }
+
+        .insta-comment-item strong {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-right: 6px;
+        }
+
+        .insta-comment-input-form {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .insta-comment-input-form.open {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .insta-comment-input {
+            flex-grow: 1;
+            background: var(--surface-alt);
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            padding: 7px 14px;
+            color: var(--text-primary);
+            font-size: 12.5px;
+            outline: none;
+            transition: border-color 0.15s ease;
+        }
+
+        .insta-comment-input:focus {
+            border-color: var(--border-focus);
+        }
+
+        .insta-comment-post-btn {
+            background: transparent;
+            border: none;
+            color: var(--accent-green);
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 6px 10px;
+            transition: opacity 0.15s ease;
+        }
+
+        .insta-comment-post-btn:hover {
+            opacity: 0.8;
         }
 
         .empty-feed-state {
@@ -978,7 +901,7 @@
             font-size: 13.5px;
         }
 
-        /* Scrollbar */
+        /* Scrollbars */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -991,7 +914,7 @@
 </head>
 
 <body>
-    <!-- Top Bar -->
+    <!-- Top Branding Header -->
     <header class="app-header">
         <a href="#" class="brand">
             <div class="brand-logo">
@@ -1009,29 +932,31 @@
             <h1 class="brand-title">SLATE</h1>
         </a>
 
-        <div class="group-pill">
+        <div class="user-pill">
             <div class="user-avatar-sm">U</div>
             <span>user_123</span>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="main-wrapper">
-        <!-- Film Search & Log Module -->
+    <!-- Main Container -->
+    <main class="feed-container">
+        <!-- Unified Log Film Module -->
         <section class="logger-card">
-            <div class="logger-heading">
-                <span class="logger-heading-dot"></span>
-                <span>Log to Group</span>
+            <div class="logger-title-row">
+                <span class="logger-title">
+                    <span class="logger-title-dot"></span>
+                    <span>Log Film</span>
+                </span>
             </div>
 
-            <!-- Dynamic TMDB Search Box -->
+            <!-- TMDB Search Bar -->
             <div class="search-box-wrapper">
                 <div class="search-input-container">
                     <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
-                    <input type="text" id="movieSearch" class="search-input" placeholder="Search film to log or review..."
+                    <input type="text" id="movieSearch" class="search-input" placeholder="Search film to log..."
                         oninput="debounceSearch()" autocomplete="off">
                     <button id="clearSearchBtn" class="search-clear-btn" onclick="clearSearchInput()" title="Clear">
                         ✕
@@ -1040,11 +965,11 @@
                 <div id="dropdown" class="dropdown"></div>
             </div>
 
-            <!-- Log Module (Revealed upon selecting a movie) -->
+            <!-- Unified Input Form (Locked Selection) -->
             <div id="logModule" class="log-module">
-                <!-- Locked Film Info Bar -->
+                <!-- Selected Movie Banner -->
                 <div class="selected-movie-header">
-                    <img id="selectedPoster" class="selected-poster" src="" alt="Poster"
+                    <img id="selectedPosterThumb" class="selected-poster-thumb" src="" alt="Poster"
                         onerror="this.src='https://via.placeholder.com/92x138/1f1f1f/777777?text=No+Poster'">
                     <div class="selected-details">
                         <div id="selectedTitle" class="selected-title"></div>
@@ -1053,85 +978,52 @@
                     <button class="change-selection-btn" onclick="cancelSelection()">Change</button>
                 </div>
 
-                <!-- Tabs: Quick Note vs. Formal Review -->
-                <div class="module-tab-switcher">
-                    <button type="button" class="tab-btn active" id="tabBtnNote" onclick="switchTab('note')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 20h9"></path>
-                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                        </svg>
-                        <span>Quick Note</span>
-                    </button>
-                    <button type="button" class="tab-btn" id="tabBtnReview" onclick="switchTab('review')">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                        </svg>
-                        <span>Formal Review</span>
-                    </button>
+                <!-- 5-Star Rating Selector -->
+                <div class="star-rating-row">
+                    <span class="rating-label">Rating</span>
+                    <div class="star-picker" id="starPicker">
+                        <button type="button" class="star-btn" data-val="1" onclick="setRating(1)" onmouseover="hoverRating(1)" onmouseleave="resetHoverRating()">★</button>
+                        <button type="button" class="star-btn" data-val="2" onclick="setRating(2)" onmouseover="hoverRating(2)" onmouseleave="resetHoverRating()">★</button>
+                        <button type="button" class="star-btn" data-val="3" onclick="setRating(3)" onmouseover="hoverRating(3)" onmouseleave="resetHoverRating()">★</button>
+                        <button type="button" class="star-btn" data-val="4" onclick="setRating(4)" onmouseover="hoverRating(4)" onmouseleave="resetHoverRating()">★</button>
+                        <button type="button" class="star-btn" data-val="5" onclick="setRating(5)" onmouseover="hoverRating(5)" onmouseleave="resetHoverRating()">★</button>
+                    </div>
                 </div>
 
-                <!-- Section 1: Note Tab Pane (No star rating, Public/Private toggle) -->
-                <div id="paneNote" class="tab-pane active">
-                    <div class="note-privacy-row">
-                        <span class="privacy-label">Visibility</span>
-                        <button type="button" id="privacyToggleBtn" class="privacy-toggle-btn" onclick="togglePrivacy()">
-                            <svg id="privacyIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="2" y1="12" x2="22" y2="12"></line>
-                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                <!-- Review / Note Textarea -->
+                <textarea id="logReviewText" class="log-textarea" rows="3"
+                    placeholder="Write your review, note, or memorable quotes..."></textarea>
+
+                <!-- Bottom Row: Public vs. Private Toggle + Actions -->
+                <div class="module-bottom-bar">
+                    <!-- Toggle Switch -->
+                    <div class="privacy-toggle-container" onclick="togglePrivacySwitch()" title="Toggle public or private visibility">
+                        <div id="privacySwitchTrack" class="switch-track active">
+                            <div class="switch-thumb"></div>
+                        </div>
+                        <span id="privacyLabelText" class="privacy-label-text">Public to Circle</span>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="module-actions">
+                        <button class="btn-cancel" onclick="cancelSelection()">Cancel</button>
+                        <button id="publishBtn" class="btn-publish" onclick="publishLogEntry()">
+                            <span>Publish</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                             </svg>
-                            <span id="privacyText">Public to Group</span>
                         </button>
                     </div>
-                    <textarea id="noteInput" class="module-textarea" rows="3"
-                        placeholder="Quick comment, memorable quote, or personal reminder..."></textarea>
-                </div>
-
-                <!-- Section 2: Formal Review Tab Pane (Compulsory 5-star rating) -->
-                <div id="paneReview" class="tab-pane">
-                    <div class="rating-section">
-                        <div class="rating-header-row">
-                            <label class="rating-label">Star Rating <span class="req">*</span></label>
-                            <span id="ratingFeedback" class="rating-feedback-text"></span>
-                        </div>
-                        <div class="star-picker" id="starPicker">
-                            <button type="button" class="star-btn" data-val="1" onclick="setRating(1)" onmouseover="hoverRating(1)" onmouseleave="resetHoverRating()">★</button>
-                            <button type="button" class="star-btn" data-val="2" onclick="setRating(2)" onmouseover="hoverRating(2)" onmouseleave="resetHoverRating()">★</button>
-                            <button type="button" class="star-btn" data-val="3" onclick="setRating(3)" onmouseover="hoverRating(3)" onmouseleave="resetHoverRating()">★</button>
-                            <button type="button" class="star-btn" data-val="4" onclick="setRating(4)" onmouseover="hoverRating(4)" onmouseleave="resetHoverRating()">★</button>
-                            <button type="button" class="star-btn" data-val="5" onclick="setRating(5)" onmouseover="hoverRating(5)" onmouseleave="resetHoverRating()">★</button>
-                        </div>
-                    </div>
-                    <textarea id="reviewInput" class="module-textarea" rows="3"
-                        placeholder="Write a full critique (acting, cinematography, directing, screenplay)..."></textarea>
-                </div>
-
-                <!-- Action Bar -->
-                <div class="module-actions">
-                    <button class="btn-cancel" onclick="cancelSelection()">Cancel</button>
-                    <button id="publishBtn" class="btn-publish" onclick="publishEntry()">
-                        <span>Publish</span>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <line x1="22" y1="2" x2="11" y2="13"></line>
-                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                        </svg>
-                    </button>
                 </div>
             </div>
 
             <div id="status" class="status-msg"></div>
         </section>
 
-        <!-- Tight-Knit Social Feed -->
-        <section class="feed-section" id="feedContainer">
-            <div class="feed-header-row">
-                <h2>Activity Feed</h2>
-                <span class="group-tag">Tight-Knit Circle</span>
-            </div>
-
-            <div id="feedList">
-                <div class="empty-feed-state" id="feedLoadingState">Loading circle activity...</div>
-            </div>
+        <!-- Instagram-Style Social Feed -->
+        <section id="feedList">
+            <div class="empty-feed-state" id="feedLoadingState">Loading circle feed...</div>
         </section>
     </main>
 
@@ -1141,20 +1033,11 @@
 
         let debounceTimer;
         let selectedMovie = null;
-        let activeTab = 'note'; // 'note' or 'review'
-        let isPrivateNote = false;
         let currentRating = 0;
+        let isPublic = true;
         let isPublishing = false;
 
-        const ratingLabels = {
-            1: "1.0 - Poor",
-            2: "2.0 - Fair",
-            3: "3.0 - Good",
-            4: "4.0 - Great",
-            5: "5.0 - Masterpiece"
-        };
-
-        // Mock group members for Read Receipts
+        // Mock group members for Seen By read receipts
         const mockViewers = [
             { name: "Maya", color: "#ec4899", initial: "M" },
             { name: "Alex", color: "#3b82f6", initial: "A" },
@@ -1162,7 +1045,7 @@
         ];
 
         // -------------------------------------------------------------------------
-        // TMDB Visual Search & Dropdown
+        // Search & Dropdown
         // -------------------------------------------------------------------------
         function debounceSearch() {
             clearTimeout(debounceTimer);
@@ -1209,16 +1092,16 @@
 
                 results.slice(0, 6).forEach(film => {
                     const year = film.release_date ? film.release_date.split('-')[0] : 'Unknown';
-                    const posterUrl = film.poster_path 
+                    const thumbUrl = film.poster_path 
                         ? `https://image.tmdb.org/t/p/w92${film.poster_path}` 
                         : 'https://via.placeholder.com/92x138/1f1f1f/777777?text=No+Poster';
 
                     const item = document.createElement('div');
                     item.className = 'dropdown-item';
-                    item.onclick = () => lockInMovieSelection(film, year, posterUrl);
+                    item.onclick = () => lockInMovieSelection(film, year, thumbUrl);
 
                     item.innerHTML = `
-                        <img class="dropdown-item-poster" src="${posterUrl}" alt="Poster" onerror="this.src='https://via.placeholder.com/92x138/1f1f1f/777777?text=No+Poster'">
+                        <img class="dropdown-item-poster" src="${thumbUrl}" alt="Poster" onerror="this.src='https://via.placeholder.com/92x138/1f1f1f/777777?text=No+Poster'">
                         <div class="dropdown-item-info">
                             <span class="dropdown-item-title">${film.title}</span>
                             <span class="dropdown-item-year">${year}</span>
@@ -1237,9 +1120,9 @@
         }
 
         // -------------------------------------------------------------------------
-        // Lock-in Selection & Log Module Tabs
+        // Lock Selection in Unified Input Module
         // -------------------------------------------------------------------------
-        function lockInMovieSelection(film, year, posterUrl) {
+        function lockInMovieSelection(film, year, thumbUrl) {
             selectedMovie = {
                 id: film.id,
                 title: film.title,
@@ -1247,24 +1130,21 @@
                 posterPath: film.poster_path || ''
             };
 
-            // Hide search dropdown & set input title
             document.getElementById('dropdown').style.display = 'none';
             document.getElementById('movieSearch').value = film.title;
             document.getElementById('status').innerText = "";
 
-            // Populate selected header
             document.getElementById('selectedTitle').innerText = film.title;
             document.getElementById('selectedYear').innerText = `Released ${year}`;
-            document.getElementById('selectedPoster').src = posterUrl;
+            document.getElementById('selectedPosterThumb').src = thumbUrl;
 
             // Reset inputs
-            document.getElementById('noteInput').value = '';
-            document.getElementById('reviewInput').value = '';
+            document.getElementById('logReviewText').value = '';
             setRating(0);
-            isPrivateNote = false;
-            updatePrivacyButtonUI();
+            isPublic = true;
+            updatePrivacyToggleUI();
 
-            // Reveal Log Module
+            // Reveal unified module
             document.getElementById('logModule').style.display = 'block';
         }
 
@@ -1277,116 +1157,76 @@
             setRating(0);
         }
 
-        function switchTab(tab) {
-            activeTab = tab;
-            const btnNote = document.getElementById('tabBtnNote');
-            const btnReview = document.getElementById('tabBtnReview');
-            const paneNote = document.getElementById('paneNote');
-            const paneReview = document.getElementById('paneReview');
-
-            if (tab === 'note') {
-                btnNote.classList.add('active');
-                btnReview.classList.remove('active');
-                paneNote.classList.add('active');
-                paneReview.classList.remove('active');
-            } else {
-                btnReview.classList.add('active');
-                btnNote.classList.remove('active');
-                paneReview.classList.add('active');
-                paneNote.classList.remove('active');
-            }
-        }
-
-        function togglePrivacy() {
-            isPrivateNote = !isPrivateNote;
-            updatePrivacyButtonUI();
-        }
-
-        function updatePrivacyButtonUI() {
-            const btn = document.getElementById('privacyToggleBtn');
-            const text = document.getElementById('privacyText');
-            const icon = document.getElementById('privacyIcon');
-
-            if (isPrivateNote) {
-                btn.classList.add('is-private');
-                text.innerText = "Private (Only You)";
-                icon.innerHTML = `<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>`;
-            } else {
-                btn.classList.remove('is-private');
-                text.innerText = "Public to Group";
-                icon.innerHTML = `<circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>`;
-            }
-        }
-
         // -------------------------------------------------------------------------
-        // Star Rating Logic (Compulsory in Formal Review)
+        // Star Rating Handlers
         // -------------------------------------------------------------------------
         function setRating(rating) {
-            currentRating = rating;
-            const picker = document.getElementById('starPicker');
-            const feedback = document.getElementById('ratingFeedback');
-            picker.classList.remove('invalid');
+            // Toggle rating off if clicking the already selected star
+            if (currentRating === rating) {
+                currentRating = 0;
+            } else {
+                currentRating = rating;
+            }
 
-            const stars = picker.querySelectorAll('.star-btn');
-            stars.forEach((star, index) => {
-                if (index < rating) {
+            const stars = document.querySelectorAll('#starPicker .star-btn');
+            stars.forEach((star, idx) => {
+                if (idx < currentRating) {
                     star.classList.add('active');
                 } else {
                     star.classList.remove('active');
                 }
             });
-
-            feedback.innerText = ratingLabels[rating] || "Select 1 to 5 stars";
         }
 
         function hoverRating(rating) {
-            const picker = document.getElementById('starPicker');
-            const stars = picker.querySelectorAll('.star-btn');
-            stars.forEach((star, index) => {
-                if (index < rating) {
+            const stars = document.querySelectorAll('#starPicker .star-btn');
+            stars.forEach((star, idx) => {
+                if (idx < rating) {
                     star.classList.add('hovered');
                 } else {
                     star.classList.remove('hovered');
                 }
             });
-            document.getElementById('ratingFeedback').innerText = ratingLabels[rating] || "";
         }
 
         function resetHoverRating() {
-            const picker = document.getElementById('starPicker');
-            const stars = picker.querySelectorAll('.star-btn');
+            const stars = document.querySelectorAll('#starPicker .star-btn');
             stars.forEach(star => star.classList.remove('hovered'));
-            document.getElementById('ratingFeedback').innerText = ratingLabels[currentRating] || (currentRating > 0 ? ratingLabels[currentRating] : "Select 1 to 5 stars");
+        }
+
+        // -------------------------------------------------------------------------
+        // Privacy Toggle Switch Handler
+        // -------------------------------------------------------------------------
+        function togglePrivacySwitch() {
+            isPublic = !isPublic;
+            updatePrivacyToggleUI();
+        }
+
+        function updatePrivacyToggleUI() {
+            const track = document.getElementById('privacySwitchTrack');
+            const label = document.getElementById('privacyLabelText');
+
+            if (isPublic) {
+                track.classList.add('active');
+                label.innerText = "Public to Circle";
+                label.style.color = "var(--text-secondary)";
+            } else {
+                track.classList.remove('active');
+                label.innerText = "Private (Only You)";
+                label.style.color = "#fca5a5";
+            }
         }
 
         // -------------------------------------------------------------------------
         // Publish & Live Optimistic Update
         // -------------------------------------------------------------------------
-        async function publishEntry() {
+        async function publishLogEntry() {
             if (isPublishing || !selectedMovie) return;
 
-            let entryContent = "";
-            let entryType = activeTab; // 'note' or 'review'
-
-            if (entryType === 'review') {
-                // Compulsory 5-star validation
-                if (!currentRating || currentRating < 1) {
-                    const picker = document.getElementById('starPicker');
-                    picker.classList.add('invalid');
-                    const feedback = document.getElementById('ratingFeedback');
-                    feedback.innerText = "Please select a star rating (Required)";
-                    feedback.style.color = "#f87171";
-                    return;
-                }
-                entryContent = document.getElementById('reviewInput').value.trim();
-            } else {
-                // Note tab
-                entryContent = document.getElementById('noteInput').value.trim();
-            }
-
+            const reviewText = document.getElementById('logReviewText').value.trim();
             const statusEl = document.getElementById('status');
 
-            // Construct optimistic item for immediate live rendering
+            // Optimistic Item
             const optimisticItem = {
                 id: 'opt_' + Date.now(),
                 ownerId: 'user_123',
@@ -1395,48 +1235,46 @@
                 filmTitle: selectedMovie.title,
                 year: selectedMovie.year,
                 posterPath: selectedMovie.posterPath,
-                entryType: entryType,
-                rating: entryType === 'review' ? currentRating : null,
-                review: entryContent,
-                isPrivate: entryType === 'note' ? isPrivateNote : false,
+                rating: currentRating > 0 ? currentRating : null,
+                review: reviewText,
+                isPrivate: !isPublic,
                 createdAt: new Date().toISOString()
             };
 
-            // 1. Optimistically Prepend to #feedList in DOM
+            // Prepend optimistic card to feed
             const feedList = document.getElementById('feedList');
             const loadingState = document.getElementById('feedLoadingState');
             if (loadingState) {
                 loadingState.remove();
             }
 
-            const cardElement = createFeedCardElement(optimisticItem);
-            cardElement.classList.add('optimistic-entry');
-            feedList.prepend(cardElement);
+            const card = createInstaCardElement(optimisticItem);
+            card.classList.add('optimistic-entry');
+            feedList.prepend(card);
 
-            // Payload for backend hitting /api/log
+            // Backend payload
             const payload = {
                 filmId: selectedMovie.id.toString(),
                 title: selectedMovie.title,
                 year: selectedMovie.year,
                 userId: "user_123",
-                entryType: entryType,
-                rating: entryType === 'review' ? currentRating : null,
-                review: entryContent,
-                isPrivate: entryType === 'note' ? isPrivateNote : false,
+                rating: currentRating > 0 ? currentRating : null,
+                review: reviewText,
+                isPrivate: !isPublic,
                 posterPath: selectedMovie.posterPath
             };
 
-            // Reset form
+            // Reset UI
             cancelSelection();
-            statusEl.innerText = entryType === 'review' ? "Review published!" : "Note logged!";
+            statusEl.innerText = "Film logged to feed!";
             statusEl.style.color = "#4ade80";
             setTimeout(() => {
-                if (statusEl.innerText.includes("published!") || statusEl.innerText.includes("logged!")) {
+                if (statusEl.innerText === "Film logged to feed!") {
                     statusEl.innerText = "";
                 }
             }, 3000);
 
-            // 2. Perform backend POST to /api/log
+            // POST to /api/log
             try {
                 isPublishing = true;
                 const response = await fetch(`${API_BASE}/log`, {
@@ -1447,12 +1285,12 @@
 
                 if (!response.ok) {
                     const errText = await response.text();
-                    console.error("Backend error logging film:", errText);
-                    statusEl.innerText = `Backend error: ${errText}`;
+                    console.error("Backend error:", errText);
+                    statusEl.innerText = `Note: Saved locally. Backend responded: ${errText}`;
                     statusEl.style.color = "#f87171";
                 }
             } catch (err) {
-                console.error("Network error logging film:", err);
+                console.error("Network error:", err);
                 statusEl.innerText = "Network Error: Saved locally in feed.";
                 statusEl.style.color = "#f87171";
             } finally {
@@ -1461,7 +1299,7 @@
         }
 
         // -------------------------------------------------------------------------
-        // Feed Card Builder (Read Receipts, No Likes, Comment button)
+        // Instagram Feed Card Generator
         // -------------------------------------------------------------------------
         function getRelativeTime(dateString) {
             if (!dateString) return "Just now";
@@ -1481,118 +1319,115 @@
         }
 
         function buildStarDisplay(rating) {
-            const count = Math.max(0, Math.min(5, Math.round(Number(rating) || 5)));
-            let starsHtml = '';
+            const count = Math.max(0, Math.min(5, Math.round(Number(rating) || 0)));
+            if (count === 0) return '';
+            let starsHtml = '<div class="insta-rating-stars">';
             for (let i = 1; i <= 5; i++) {
                 starsHtml += `<span class="${i <= count ? 'filled' : 'empty'}">★</span>`;
             }
+            starsHtml += '</div>';
             return starsHtml;
         }
 
-        function createFeedCardElement(item) {
+        function createInstaCardElement(item) {
             const card = document.createElement('article');
-            card.className = 'feed-card';
+            card.className = 'insta-card';
             card.id = `card-${item.id || Math.random().toString(36).substr(2, 9)}`;
 
             const username = item.ownerId || item.userId || "user_123";
             const relativeTime = getRelativeTime(item.createdAt);
-            const title = item.filmTitle || item.title || "Unknown Film";
+            const title = item.filmTitle || item.title || "Untitled Film";
             const year = item.year ? `(${item.year})` : '';
 
-            // Poster URL
+            // High-Resolution TMDB Poster (w500 or w780)
             let posterSrc = '';
             if (item.posterPath) {
                 posterSrc = item.posterPath.startsWith('http')
                     ? item.posterPath
-                    : `https://image.tmdb.org/t/p/w185${item.posterPath}`;
+                    : `https://image.tmdb.org/t/p/w500${item.posterPath}`;
             }
 
-            // Determine if Review or Note
-            const isReview = item.entryType === 'review' || (item.rating && item.rating > 0);
-            const isPrivate = item.isPrivate === true;
-
-            // Content text
-            const textContent = item.review || (item.feedMessage ? item.feedMessage : "");
-
-            // Badge
-            let badgeHtml = '';
-            if (isPrivate) {
-                badgeHtml = `<span class="entry-badge private-badge">Private Note</span>`;
-            } else if (isReview) {
-                badgeHtml = `<span class="entry-badge review-badge">Review</span>`;
-            } else {
-                badgeHtml = `<span class="entry-badge note-badge">Note</span>`;
-            }
-
-            // Poster HTML
-            const posterHtml = posterSrc
-                ? `<img class="feed-movie-poster" src="${posterSrc}" alt="${title}" onerror="this.outerHTML='<div class=\\'feed-movie-poster-fallback\\'><svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\'><rect x=\\'2\\' y=\\'2\\' width=\\'20\\' height=\\'20\\' rx=\\'2.18\\'></rect><path d=\\'M7 2v20M17 2v20M2 12h20\\'></path></svg><span>${title}</span></div>'">`
-                : `<div class="feed-movie-poster-fallback">
-                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                         <rect x="2" y="2" width="20" height="20" rx="2.18"></rect>
-                         <path d="M7 2v20M17 2v20M2 12h20"></path>
-                     </svg>
-                     <span>${title}</span>
+            // Media Element (Full-width prominent image with fallback)
+            const mediaHtml = posterSrc
+                ? `<div class="insta-media-container">
+                     <img class="insta-poster-img" src="${posterSrc}" alt="${escapeHtml(title)}"
+                          onerror="this.parentElement.innerHTML='<div class=\\'insta-poster-fallback\\'><svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\'><rect x=\\'2\\' y=\\'2\\' width=\\'20\\' height=\\'20\\' rx=\\'2.18\\'></rect><path d=\\'M7 2v20M17 2v20M2 12h20\\'></path></svg><span>${escapeHtml(title)}</span></div>'">
+                   </div>`
+                : `<div class="insta-media-container">
+                     <div class="insta-poster-fallback">
+                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                             <rect x="2" y="2" width="20" height="20" rx="2.18"></rect>
+                             <path d="M7 2v20M17 2v20M2 12h20"></path>
+                         </svg>
+                         <span>${escapeHtml(title)}</span>
+                     </div>
                    </div>`;
 
-            // Star row only if formal review
-            const starRowHtml = isReview
-                ? `<div class="feed-star-row">${buildStarDisplay(item.rating || 5)}</div>`
-                : '';
+            // Star Rating
+            const starsHtml = item.rating ? buildStarDisplay(item.rating) : '';
 
-            // Read Receipts Mock UI
-            const readReceiptsHtml = `
-                <div class="read-receipts" title="Seen by members of your circle">
-                    <svg class="read-receipts-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                    </svg>
-                    <div class="read-avatars-stack">
-                        ${mockViewers.map(v => `<div class="read-avatar-micro" style="background:${v.color}">${v.initial}</div>`).join('')}
-                    </div>
-                    <span class="read-text">Seen by Maya, Alex, Sam</span>
-                </div>
-            `;
+            // Text content
+            const captionBody = item.review || (item.feedMessage ? item.feedMessage : "");
 
             card.innerHTML = `
-                <!-- Card Header -->
-                <div class="feed-card-header">
-                    <div class="feed-user-meta">
-                        <div class="feed-avatar">${username.charAt(0).toUpperCase()}</div>
-                        <div class="feed-user-details">
-                            <div class="feed-username-row">
-                                <span class="feed-username">${username}</span>
-                                ${badgeHtml}
-                            </div>
-                            <span class="feed-time">${relativeTime}</span>
+                <!-- 1. Header: Circular Profile Pic, Username, Relative Timestamp -->
+                <div class="insta-header">
+                    <div class="insta-user-meta">
+                        <div class="insta-avatar">${username.charAt(0).toUpperCase()}</div>
+                        <div class="insta-user-info">
+                            <span class="insta-username">${username}</span>
+                            <span class="insta-dot">•</span>
+                            <span class="insta-time">${relativeTime}</span>
                         </div>
                     </div>
+                    <button class="insta-options-btn" title="Options">•••</button>
                 </div>
 
-                <!-- Card Body (Movie Poster + Content) -->
-                <div class="feed-card-body">
-                    ${posterHtml}
-                    <div class="feed-content-col">
-                        <div class="feed-movie-heading">
-                            <span class="feed-movie-title">${title}</span>
-                            <span class="feed-movie-year">${year}</span>
+                <!-- 2. Media: Large, Prominent Full-Width Movie Poster -->
+                ${mediaHtml}
+
+                <!-- 3. Action Bar: Seen By Read Receipts + Comment Icon -->
+                <div class="insta-action-bar">
+                    <div class="insta-seen-by" title="Seen by members of your circle">
+                        <svg class="insta-eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <div class="insta-avatar-stack">
+                            ${mockViewers.map(v => `<div class="insta-micro-avatar" style="background:${v.color}">${v.initial}</div>`).join('')}
                         </div>
-                        ${starRowHtml}
-                        ${textContent 
-                            ? `<div class="feed-body-text">${escapeHtml(textContent)}</div>` 
-                            : `<div class="feed-default-msg">${isReview ? 'Logged without written critique.' : 'Logged film note.'}</div>`}
+                        <span class="insta-seen-text">Seen by Maya, Alex, Sam</span>
                     </div>
-                </div>
 
-                <!-- Card Footer: Read Receipts & Comment Button (NO LIKES) -->
-                <div class="feed-card-footer">
-                    ${readReceiptsHtml}
-                    <button class="comment-btn" onclick="openCommentBox(this)">
+                    <button class="insta-comment-icon-btn" onclick="toggleCommentBox(this)">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                         </svg>
                         <span>Comment</span>
                     </button>
+                </div>
+
+                <!-- 4. Caption: Stars & Review Content -->
+                <div class="insta-caption-area">
+                    <div class="insta-film-title-row">
+                        <span>${escapeHtml(title)} ${year}</span>
+                    </div>
+                    ${starsHtml}
+                    ${captionBody ? `
+                        <div class="insta-caption-text">
+                            <span class="insta-caption-username">${username}</span>
+                            <span>${escapeHtml(captionBody)}</span>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <!-- 5. Local Interactive Comments Section -->
+                <div class="insta-comments-section">
+                    <div class="insta-comments-list"></div>
+                    <form class="insta-comment-input-form" onsubmit="handlePostComment(event, this)">
+                        <input type="text" class="insta-comment-input" placeholder="Add a comment as user_123..." required>
+                        <button type="submit" class="insta-comment-post-btn">Post</button>
+                    </form>
                 </div>
             `;
 
@@ -1605,25 +1440,36 @@
             return div.innerHTML;
         }
 
-        function openCommentBox(btn) {
-            const card = btn.closest('.feed-card');
-            let box = card.querySelector('.comment-input-row');
-            if (box) {
-                box.remove();
-                return;
-            }
+        // -------------------------------------------------------------------------
+        // Local Comment Interactivity (Frontend DOM Manipulation)
+        // -------------------------------------------------------------------------
+        function toggleCommentBox(btn) {
+            const card = btn.closest('.insta-card');
+            const form = card.querySelector('.insta-comment-input-form');
+            const input = form.querySelector('.insta-comment-input');
 
-            box = document.createElement('div');
-            box.className = 'comment-input-row';
-            box.style.marginTop = '10px';
-            box.style.display = 'flex';
-            box.style.gap = '8px';
-            box.innerHTML = `
-                <input type="text" placeholder="Write a comment..." style="flex-grow:1; background:#262626; border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:#fff; padding:7px 10px; font-size:12.5px; outline:none;">
-                <button style="background:#4ade80; border:none; border-radius:6px; padding:0 12px; font-size:12px; font-weight:600; color:#052e16; cursor:pointer;" onclick="this.parentElement.remove()">Post</button>
-            `;
-            card.appendChild(box);
-            box.querySelector('input').focus();
+            form.classList.toggle('open');
+            if (form.classList.contains('open')) {
+                input.focus();
+            }
+        }
+
+        function handlePostComment(event, form) {
+            event.preventDefault();
+            const input = form.querySelector('.insta-comment-input');
+            const commentText = input.value.trim();
+            if (!commentText) return;
+
+            const card = form.closest('.insta-card');
+            const commentsList = card.querySelector('.insta-comments-list');
+
+            // Append new comment locally
+            const commentItem = document.createElement('div');
+            commentItem.className = 'insta-comment-item';
+            commentItem.innerHTML = `<strong>user_123</strong><span>${escapeHtml(commentText)}</span>`;
+            commentsList.appendChild(commentItem);
+
+            input.value = '';
         }
 
         // -------------------------------------------------------------------------
@@ -1641,26 +1487,26 @@
                 if (!items || items.length === 0) {
                     feedList.innerHTML = `
                         <div class="empty-feed-state">
-                            No circle activity yet. Search a film to log a note or review!
+                            No films in the circle feed yet. Search above to log the first one!
                         </div>
                     `;
                     return;
                 }
 
                 items.forEach(item => {
-                    const card = createFeedCardElement(item);
+                    const card = createInstaCardElement(item);
                     feedList.appendChild(card);
                 });
             } catch (error) {
                 console.error("Could not load feed:", error);
                 const loadingState = document.getElementById('feedLoadingState');
                 if (loadingState) {
-                    loadingState.innerText = "Unable to connect to group activity feed.";
+                    loadingState.innerText = "Unable to connect to circle feed.";
                 }
             }
         }
 
-        // Initial Load
+        // Startup
         loadFeed();
     </script>
 </body>
