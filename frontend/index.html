@@ -1,49 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CineSync | Minimal</title>
+    <title>Slate | Log your films</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #121212; color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .container { background: #1e1e1e; padding: 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); text-align: center; width: 100%; max-width: 400px; }
-        h1 { font-size: 24px; font-weight: 500; margin-bottom: 24px; letter-spacing: 2px; }
-        input { width: 90%; padding: 12px; margin-bottom: 16px; background: #2c2c2c; border: 1px solid #333; color: white; border-radius: 4px; outline: none; }
-        input:focus { border-color: #555; }
-        button { width: 100%; padding: 12px; background: #ffffff; color: #000000; font-weight: 600; border: none; border-radius: 4px; cursor: pointer; transition: 0.2s ease; }
-        button:hover { background: #e0e0e0; }
-        .status { margin-top: 16px; font-size: 14px; color: #aaa; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: #1e1e1e;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 24px;
+            letter-spacing: 4px;
+        }
+
+        input {
+            width: 90%;
+            padding: 12px;
+            margin-bottom: 16px;
+            background: #2c2c2c;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #555;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #ffffff;
+            color: #000000;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        button:hover {
+            background: #e0e0e0;
+        }
+
+        .status {
+            margin-top: 16px;
+            font-size: 14px;
+            color: #aaa;
+            min-height: 20px;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <h1>CINESYNC</h1>
-        <input type="text" id="movieSearch" placeholder="Search for a film...">
+        <h1>SLATE</h1>
+        <input type="text" id="movieSearch" placeholder="Search for a film (e.g. Inception)...">
         <button onclick="logFilm()">Log Film</button>
         <div id="status" class="status"></div>
     </div>
 
     <script>
+        // Pointing directly to your Azure Function backend in Central India
         const API_BASE = "https://func-slate-app-wijb3v.azurewebsites.net/api";
 
         async function logFilm() {
-            const search = document.getElementById('movieSearch').value;
+            const searchInput = document.getElementById('movieSearch').value;
             const statusEl = document.getElementById('status');
-            if(!search) return;
-            
-            statusEl.innerText = "Processing async event...";
-            
-            // This is where it talks to your Node.js Azure Function
+
+            if (!searchInput) return;
+
+            statusEl.innerText = "Connecting to cloud backend...";
+            statusEl.style.color = "#aaa";
+
             try {
-                // Simulating the backend response for a clean UI feel
-                setTimeout(() => {
-                    statusEl.innerText = `Success: "${search}" sent to Azure Storage Queue!`;
+                // This makes the ACTUAL network request to your Node.js server
+                const response = await fetch(`${API_BASE}/log`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: searchInput,
+                        userId: "user_123" // Hardcoded for lab demo purposes
+                    })
+                });
+
+                if (response.ok) {
+                    statusEl.innerText = `Success: "${searchInput}" logged to Cosmos DB & Queue!`;
+                    statusEl.style.color = "#4ade80"; // Green success text
                     document.getElementById('movieSearch').value = '';
-                }, 800);
+                } else {
+                    const errText = await response.text();
+                    statusEl.innerText = `Backend Error: ${errText}`;
+                    statusEl.style.color = "#f87171"; // Red error text
+                }
             } catch (error) {
-                statusEl.innerText = "Error connecting to cloud.";
+                statusEl.innerText = "Network Error: Could not reach the Azure Function.";
+                statusEl.style.color = "#f87171";
             }
         }
     </script>
 </body>
+
 </html>
