@@ -4,106 +4,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slate</title>
+    <title>Slate — Film Social & Activity Log</title>
+    <!-- Google Fonts for crisp modern typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
-        .feed-container {
-            margin-top: 40px;
-            width: 100%;
-            max-width: 400px;
+        :root {
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --surface-alt: #262626;
+            --surface-hover: #323232;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-focus: rgba(255, 255, 255, 0.22);
+            --accent-green: #4ade80;
+            --accent-green-dark: #22c55e;
+            --accent-gold: #fbbf24;
+            --accent-blue: #38bdf8;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.45);
         }
 
-        .feed-container h2 {
-            font-size: 12px;
-            font-weight: 600;
-            color: #888;
-            letter-spacing: 2px;
-            margin-bottom: 16px;
-            text-transform: uppercase;
-            border-bottom: 1px solid #333;
-            padding-bottom: 8px;
-        }
-
-        .feed-item {
-            background: #1e1e1e;
-            padding: 16px;
-            border-radius: 6px;
-            margin-bottom: 12px;
-            font-size: 14px;
-            border-left: 3px solid #4ade80;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .feed-time {
-            font-size: 11px;
-            color: #666;
-            margin-bottom: 4px;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-top: 15vh;
-            margin: 0;
+            padding: 36px 16px 80px;
+            -webkit-font-smoothing: antialiased;
         }
 
-        .container {
-            background: #1e1e1e;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        /* -------------------------------------------------------------------------
+           Header & Top Bar
+        -------------------------------------------------------------------------- */
+        .app-header {
             width: 100%;
-            max-width: 400px;
+            max-width: 520px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            padding: 0 4px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #27272a, #18181b);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-green);
+        }
+
+        .brand-logo svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        .brand-title {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 3px;
+        }
+
+        .group-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            padding: 5px 12px 5px 6px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .user-avatar-sm {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4ade80, #10b981);
+            color: #000;
+            font-weight: 700;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* -------------------------------------------------------------------------
+           Main Layout & Logger Container
+        -------------------------------------------------------------------------- */
+        .main-wrapper {
+            width: 100%;
+            max-width: 520px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .logger-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-card);
             position: relative;
         }
 
-        h1 {
-            font-size: 24px;
-            font-weight: 500;
-            margin-bottom: 24px;
-            letter-spacing: 4px;
-            text-align: center;
+        .logger-heading {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        input {
+        .logger-heading-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent-green);
+        }
+
+        .search-box-wrapper {
+            position: relative;
             width: 100%;
-            box-sizing: border-box;
-            padding: 12px;
-            margin-bottom: 8px;
-            background: #2c2c2c;
-            border: 1px solid #333;
-            color: white;
-            border-radius: 4px;
+        }
+
+        .search-input-container {
+            display: flex;
+            align-items: center;
+            background: var(--surface-alt);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 0 14px;
+            transition: all 0.2s ease;
+        }
+
+        .search-input-container:focus-within {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.15);
+        }
+
+        .search-icon {
+            color: var(--text-muted);
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .search-input {
+            width: 100%;
+            background: transparent;
+            border: none;
             outline: none;
+            padding: 13px 0;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
         }
 
-        input:focus {
-            border-color: #555;
+        .search-input::placeholder {
+            color: var(--text-muted);
         }
 
+        .search-clear-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 12px;
+        }
+
+        .search-clear-btn:hover {
+            color: var(--text-primary);
+        }
+
+        /* TMDB Dropdown */
         .dropdown {
             position: absolute;
-            width: calc(100% - 80px);
-            background: #2c2c2c;
-            border-radius: 4px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.8);
-            max-height: 300px;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: #252525;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.7);
+            max-height: 320px;
             overflow-y: auto;
-            z-index: 10;
+            z-index: 50;
             display: none;
         }
 
         .dropdown-item {
             display: flex;
             align-items: center;
-            padding: 10px;
+            padding: 10px 14px;
             cursor: pointer;
-            border-bottom: 1px solid #333;
-            transition: 0.2s;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background 0.15s ease;
         }
 
         .dropdown-item:last-child {
@@ -111,74 +248,935 @@
         }
 
         .dropdown-item:hover {
-            background: #3a3a3a;
+            background: var(--surface-hover);
         }
 
-        .dropdown-item img {
-            width: 40px;
-            height: 60px;
+        .dropdown-item-poster {
+            width: 38px;
+            height: 56px;
             object-fit: cover;
-            border-radius: 2px;
+            border-radius: 4px;
             margin-right: 12px;
-            background: #121212;
+            background: #141414;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
         }
 
-        .dropdown-item .info {
+        .dropdown-item-info {
             display: flex;
             flex-direction: column;
+            gap: 2px;
+            flex-grow: 1;
+            overflow: hidden;
         }
 
-        .dropdown-item .title {
+        .dropdown-item-title {
+            font-size: 14px;
             font-weight: 500;
-            font-size: 14px;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .dropdown-item .year {
+        .dropdown-item-year {
             font-size: 12px;
-            color: #aaa;
-            margin-top: 4px;
+            color: var(--text-muted);
         }
 
-        .status {
-            margin-top: 16px;
-            font-size: 14px;
+        .dropdown-item-select-hint {
+            font-size: 12px;
+            color: var(--accent-green);
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            font-weight: 500;
+        }
+
+        .dropdown-item:hover .dropdown-item-select-hint {
+            opacity: 1;
+        }
+
+        .status-msg {
+            margin-top: 10px;
+            font-size: 13px;
+            min-height: 18px;
+            color: var(--text-muted);
             text-align: center;
-            min-height: 20px;
-            color: #aaa;
         }
 
+        /* -------------------------------------------------------------------------
+           Log Module (Locked Film Selection & Tabs)
+        -------------------------------------------------------------------------- */
+        .log-module {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            animation: fadeInSlideDown 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeInSlideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .selected-movie-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: var(--surface-alt);
+            padding: 12px 14px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            margin-bottom: 18px;
+        }
+
+        .selected-poster {
+            width: 48px;
+            height: 72px;
+            object-fit: cover;
+            border-radius: 6px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            background: #141414;
+            flex-shrink: 0;
+        }
+
+        .selected-details {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            flex-grow: 1;
+        }
+
+        .selected-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .selected-year {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .change-selection-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 12px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .change-selection-btn:hover {
+            color: var(--text-primary);
+            border-color: var(--border-focus);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Tabs Switcher: Note vs. Formal Review */
+        .module-tab-switcher {
+            display: flex;
+            background: var(--surface-alt);
+            padding: 4px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            margin-bottom: 18px;
+            gap: 4px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 8px 12px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-secondary);
+        }
+
+        .tab-btn.active {
+            background: var(--surface-color);
+            color: var(--text-primary);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .tab-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* Tab Content */
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Note Section: Privacy Toggle */
+        .note-privacy-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding: 0 2px;
+        }
+
+        .privacy-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .privacy-toggle-btn {
+            background: var(--surface-alt);
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            padding: 5px 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--accent-green);
+            transition: all 0.15s ease;
+        }
+
+        .privacy-toggle-btn.is-private {
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, 0.3);
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        .privacy-toggle-btn svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        /* Star Rating in Formal Review */
+        .rating-section {
+            margin-bottom: 16px;
+        }
+
+        .rating-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .rating-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .rating-label span.req {
+            color: var(--accent-gold);
+        }
+
+        .rating-feedback-text {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--accent-gold);
+            min-height: 16px;
+        }
+
+        .star-picker {
+            display: inline-flex;
+            gap: 6px;
+            background: var(--surface-alt);
+            padding: 8px 14px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            transition: border-color 0.2s ease;
+        }
+
+        .star-picker.invalid {
+            border-color: #ef4444;
+            animation: shake 0.3s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-4px); }
+            40%, 80% { transform: translateX(4px); }
+        }
+
+        .star-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 22px;
+            line-height: 1;
+            color: #4b5563;
+            transition: transform 0.15s ease, color 0.15s ease;
+            user-select: none;
+        }
+
+        .star-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .star-btn.active,
+        .star-btn.hovered {
+            color: var(--accent-gold);
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+        }
+
+        /* Textareas */
+        .module-textarea {
+            width: 100%;
+            background: var(--surface-alt);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+            outline: none;
+            margin-bottom: 16px;
+            transition: border-color 0.2s ease;
+            line-height: 1.5;
+        }
+
+        .module-textarea:focus {
+            border-color: var(--border-focus);
+        }
+
+        .module-textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Action Bar */
+        .module-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-cancel {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 8px 14px;
+            border-radius: var(--radius-md);
+            transition: color 0.15s ease;
+        }
+
+        .btn-cancel:hover {
+            color: var(--text-primary);
+        }
+
+        .btn-publish {
+            background: var(--accent-green);
+            color: #052e16;
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 9px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            box-shadow: 0 3px 10px rgba(74, 222, 128, 0.25);
+        }
+
+        .btn-publish:hover {
+            background: var(--accent-green-dark);
+            color: #000;
+            transform: translateY(-1px);
+        }
+
+        .btn-publish:active {
+            transform: scale(0.98);
+        }
+
+        .btn-publish:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* -------------------------------------------------------------------------
+           Social Feed Section (Tight-Knit Group Feed)
+        -------------------------------------------------------------------------- */
+        .feed-section {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .feed-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .feed-header-row h2 {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .group-tag {
+            font-size: 11px;
+            color: var(--accent-green);
+            background: rgba(74, 222, 128, 0.1);
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-weight: 500;
+        }
+
+        #feedList {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* -------------------------------------------------------------------------
+           Feed Card (Tight-Knit Social Cards)
+        -------------------------------------------------------------------------- */
+        .feed-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 18px 20px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            transition: border-color 0.2s ease;
+            position: relative;
+        }
+
+        .feed-card:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .feed-card.optimistic-entry {
+            animation: optimisticSlideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border-left: 3px solid var(--accent-green);
+        }
+
+        @keyframes optimisticSlideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-14px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Card Header */
+        .feed-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .feed-user-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feed-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #374151, #1f2937);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent-green);
+            flex-shrink: 0;
+        }
+
+        .feed-user-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .feed-username-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .feed-username {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .entry-badge {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .entry-badge.review-badge {
+            background: rgba(251, 191, 36, 0.12);
+            color: var(--accent-gold);
+        }
+
+        .entry-badge.note-badge {
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--accent-blue);
+        }
+
+        .entry-badge.private-badge {
+            background: rgba(239, 68, 68, 0.12);
+            color: #fca5a5;
+        }
+
+        .feed-time {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Card Body */
+        .feed-card-body {
+            display: flex;
+            gap: 14px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .feed-movie-poster {
+            width: 72px;
+            height: 108px;
+            object-fit: cover;
+            border-radius: 6px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+            background: #141414;
+            flex-shrink: 0;
+        }
+
+        .feed-movie-poster-fallback {
+            width: 72px;
+            height: 108px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #262626, #161616);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 6px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+            flex-shrink: 0;
+            border: 1px solid var(--border-color);
+        }
+
+        .feed-movie-poster-fallback svg {
+            width: 20px;
+            height: 20px;
+            color: var(--accent-green);
+        }
+
+        .feed-content-col {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        .feed-movie-heading {
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .feed-movie-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .feed-movie-year {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .feed-star-row {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            color: var(--accent-gold);
+            font-size: 14px;
+            margin: 1px 0 3px;
+        }
+
+        .feed-star-row .empty {
+            color: #374151;
+        }
+
+        .feed-body-text {
+            font-size: 13.5px;
+            color: #d1d5db;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .feed-default-msg {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        /* -------------------------------------------------------------------------
+           Card Footer: Read Receipts & Comment (NO LIKE BUTTONS)
+        -------------------------------------------------------------------------- */
+        .feed-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Read Receipts UI */
+        .read-receipts {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        .read-receipts-icon {
+            width: 15px;
+            height: 15px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .read-avatars-stack {
+            display: flex;
+            align-items: center;
+        }
+
+        .read-avatar-micro {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 1.5px solid var(--surface-color);
+            margin-left: -5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 700;
+            color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .read-avatar-micro:first-child {
+            margin-left: 0;
+        }
+
+        .read-text {
+            font-size: 11.5px;
+            color: #888888;
+        }
+
+        /* Comment Button */
+        .comment-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 12.5px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+            font-family: inherit;
+        }
+
+        .comment-btn:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .comment-btn svg {
+            width: 15px;
+            height: 15px;
+        }
+
+        .empty-feed-state {
+            background: var(--surface-color);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 36px 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13.5px;
+        }
+
+        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #555;
-            border-radius: 3px;
+            background: #333333;
+            border-radius: 4px;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <h1>SLATE</h1>
-        <input type="text" id="movieSearch" placeholder="Search for a film..." oninput="debounceSearch()"
-            autocomplete="off">
-        <div id="dropdown" class="dropdown"></div>
-        <div id="status" class="status"></div>
-    </div>
+    <!-- Top Bar -->
+    <header class="app-header">
+        <a href="#" class="brand">
+            <div class="brand-logo">
+                <svg viewBox="0 0 24 24">
+                    <rect x="2" y="2" width="20" height="20" rx="2.18" stroke="currentColor" stroke-width="2" fill="none"></rect>
+                    <line x1="7" y1="2" x2="7" y2="22" stroke="currentColor" stroke-width="2"></line>
+                    <line x1="17" y1="2" x2="17" y2="22" stroke="currentColor" stroke-width="2"></line>
+                    <line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"></line>
+                    <line x1="2" y1="7" x2="7" y2="7" stroke="currentColor" stroke-width="2"></line>
+                    <line x1="2" y1="17" x2="7" y2="17" stroke="currentColor" stroke-width="2"></line>
+                    <line x1="17" y1="7" x2="22" y2="7" stroke="currentColor" stroke-width="2"></line>
+                    <line x1="17" y1="17" x2="22" y2="17" stroke="currentColor" stroke-width="2"></line>
+                </svg>
+            </div>
+            <h1 class="brand-title">SLATE</h1>
+        </a>
 
-    <div class="feed-container" id="feedContainer">
-        <h2>RECENT ACTIVITY</h2>
-        <div id="feedList"></div>
-    </div>
+        <div class="group-pill">
+            <div class="user-avatar-sm">U</div>
+            <span>user_123</span>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-wrapper">
+        <!-- Film Search & Log Module -->
+        <section class="logger-card">
+            <div class="logger-heading">
+                <span class="logger-heading-dot"></span>
+                <span>Log to Group</span>
+            </div>
+
+            <!-- Dynamic TMDB Search Box -->
+            <div class="search-box-wrapper">
+                <div class="search-input-container">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="movieSearch" class="search-input" placeholder="Search film to log or review..."
+                        oninput="debounceSearch()" autocomplete="off">
+                    <button id="clearSearchBtn" class="search-clear-btn" onclick="clearSearchInput()" title="Clear">
+                        ✕
+                    </button>
+                </div>
+                <div id="dropdown" class="dropdown"></div>
+            </div>
+
+            <!-- Log Module (Revealed upon selecting a movie) -->
+            <div id="logModule" class="log-module">
+                <!-- Locked Film Info Bar -->
+                <div class="selected-movie-header">
+                    <img id="selectedPoster" class="selected-poster" src="" alt="Poster"
+                        onerror="this.src='https://via.placeholder.com/92x138/1f1f1f/777777?text=No+Poster'">
+                    <div class="selected-details">
+                        <div id="selectedTitle" class="selected-title"></div>
+                        <div id="selectedYear" class="selected-year"></div>
+                    </div>
+                    <button class="change-selection-btn" onclick="cancelSelection()">Change</button>
+                </div>
+
+                <!-- Tabs: Quick Note vs. Formal Review -->
+                <div class="module-tab-switcher">
+                    <button type="button" class="tab-btn active" id="tabBtnNote" onclick="switchTab('note')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 20h9"></path>
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                        </svg>
+                        <span>Quick Note</span>
+                    </button>
+                    <button type="button" class="tab-btn" id="tabBtnReview" onclick="switchTab('review')">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                        <span>Formal Review</span>
+                    </button>
+                </div>
+
+                <!-- Section 1: Note Tab Pane (No star rating, Public/Private toggle) -->
+                <div id="paneNote" class="tab-pane active">
+                    <div class="note-privacy-row">
+                        <span class="privacy-label">Visibility</span>
+                        <button type="button" id="privacyToggleBtn" class="privacy-toggle-btn" onclick="togglePrivacy()">
+                            <svg id="privacyIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            </svg>
+                            <span id="privacyText">Public to Group</span>
+                        </button>
+                    </div>
+                    <textarea id="noteInput" class="module-textarea" rows="3"
+                        placeholder="Quick comment, memorable quote, or personal reminder..."></textarea>
+                </div>
+
+                <!-- Section 2: Formal Review Tab Pane (Compulsory 5-star rating) -->
+                <div id="paneReview" class="tab-pane">
+                    <div class="rating-section">
+                        <div class="rating-header-row">
+                            <label class="rating-label">Star Rating <span class="req">*</span></label>
+                            <span id="ratingFeedback" class="rating-feedback-text"></span>
+                        </div>
+                        <div class="star-picker" id="starPicker">
+                            <button type="button" class="star-btn" data-val="1" onclick="setRating(1)" onmouseover="hoverRating(1)" onmouseleave="resetHoverRating()">★</button>
+                            <button type="button" class="star-btn" data-val="2" onclick="setRating(2)" onmouseover="hoverRating(2)" onmouseleave="resetHoverRating()">★</button>
+                            <button type="button" class="star-btn" data-val="3" onclick="setRating(3)" onmouseover="hoverRating(3)" onmouseleave="resetHoverRating()">★</button>
+                            <button type="button" class="star-btn" data-val="4" onclick="setRating(4)" onmouseover="hoverRating(4)" onmouseleave="resetHoverRating()">★</button>
+                            <button type="button" class="star-btn" data-val="5" onclick="setRating(5)" onmouseover="hoverRating(5)" onmouseleave="resetHoverRating()">★</button>
+                        </div>
+                    </div>
+                    <textarea id="reviewInput" class="module-textarea" rows="3"
+                        placeholder="Write a full critique (acting, cinematography, directing, screenplay)..."></textarea>
+                </div>
+
+                <!-- Action Bar -->
+                <div class="module-actions">
+                    <button class="btn-cancel" onclick="cancelSelection()">Cancel</button>
+                    <button id="publishBtn" class="btn-publish" onclick="publishEntry()">
+                        <span>Publish</span>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div id="status" class="status-msg"></div>
+        </section>
+
+        <!-- Tight-Knit Social Feed -->
+        <section class="feed-section" id="feedContainer">
+            <div class="feed-header-row">
+                <h2>Activity Feed</h2>
+                <span class="group-tag">Tight-Knit Circle</span>
+            </div>
+
+            <div id="feedList">
+                <div class="empty-feed-state" id="feedLoadingState">Loading circle activity...</div>
+            </div>
+        </section>
+    </main>
 
     <script>
+        // CRITICAL RULE: Preserve exact API_BASE
         const API_BASE = "https://func-slate-app-wijb3v.azurewebsites.net/api";
-        let debounceTimer;
 
+        let debounceTimer;
+        let selectedMovie = null;
+        let activeTab = 'note'; // 'note' or 'review'
+        let isPrivateNote = false;
+        let currentRating = 0;
+        let isPublishing = false;
+
+        const ratingLabels = {
+            1: "1.0 - Poor",
+            2: "2.0 - Fair",
+            3: "3.0 - Good",
+            4: "4.0 - Great",
+            5: "5.0 - Masterpiece"
+        };
+
+        // Mock group members for Read Receipts
+        const mockViewers = [
+            { name: "Maya", color: "#ec4899", initial: "M" },
+            { name: "Alex", color: "#3b82f6", initial: "A" },
+            { name: "Sam", color: "#10b981", initial: "S" }
+        ];
+
+        // -------------------------------------------------------------------------
+        // TMDB Visual Search & Dropdown
+        // -------------------------------------------------------------------------
         function debounceSearch() {
             clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(searchTMDB, 500);
+            const query = document.getElementById('movieSearch').value.trim();
+            document.getElementById('clearSearchBtn').style.display = query.length > 0 ? 'flex' : 'none';
+            debounceTimer = setTimeout(searchTMDB, 400);
+        }
+
+        function clearSearchInput() {
+            const input = document.getElementById('movieSearch');
+            input.value = '';
+            document.getElementById('clearSearchBtn').style.display = 'none';
+            document.getElementById('dropdown').style.display = 'none';
+            document.getElementById('status').innerText = '';
         }
 
         async function searchTMDB() {
@@ -193,6 +1191,7 @@
             }
 
             statusEl.innerText = "Searching TMDB...";
+            statusEl.style.color = "#a1a1aa";
 
             try {
                 const response = await fetch(`${API_BASE}/searchFilms?query=${encodeURIComponent(query)}`);
@@ -208,20 +1207,23 @@
                     return;
                 }
 
-                results.slice(0, 5).forEach(film => {
+                results.slice(0, 6).forEach(film => {
                     const year = film.release_date ? film.release_date.split('-')[0] : 'Unknown';
-                    const posterPath = film.poster_path ? `https://image.tmdb.org/t/p/w92${film.poster_path}` : '';
+                    const posterUrl = film.poster_path 
+                        ? `https://image.tmdb.org/t/p/w92${film.poster_path}` 
+                        : 'https://via.placeholder.com/92x138/1f1f1f/777777?text=No+Poster';
 
                     const item = document.createElement('div');
                     item.className = 'dropdown-item';
-                    item.onclick = () => logSelectedFilm(film.id, film.title, year);
+                    item.onclick = () => lockInMovieSelection(film, year, posterUrl);
 
                     item.innerHTML = `
-                        <img src="${posterPath}" alt="Poster" onerror="this.style.display='none'">
-                        <div class="info">
-                            <span class="title">${film.title}</span>
-                            <span class="year">${year}</span>
+                        <img class="dropdown-item-poster" src="${posterUrl}" alt="Poster" onerror="this.src='https://via.placeholder.com/92x138/1f1f1f/777777?text=No+Poster'">
+                        <div class="dropdown-item-info">
+                            <span class="dropdown-item-title">${film.title}</span>
+                            <span class="dropdown-item-year">${year}</span>
                         </div>
+                        <span class="dropdown-item-select-hint">Select</span>
                     `;
                     dropdown.appendChild(item);
                 });
@@ -234,45 +1236,399 @@
             }
         }
 
-        async function logSelectedFilm(filmId, filmTitle, year) {
+        // -------------------------------------------------------------------------
+        // Lock-in Selection & Log Module Tabs
+        // -------------------------------------------------------------------------
+        function lockInMovieSelection(film, year, posterUrl) {
+            selectedMovie = {
+                id: film.id,
+                title: film.title,
+                year: year,
+                posterPath: film.poster_path || ''
+            };
+
+            // Hide search dropdown & set input title
+            document.getElementById('dropdown').style.display = 'none';
+            document.getElementById('movieSearch').value = film.title;
+            document.getElementById('status').innerText = "";
+
+            // Populate selected header
+            document.getElementById('selectedTitle').innerText = film.title;
+            document.getElementById('selectedYear').innerText = `Released ${year}`;
+            document.getElementById('selectedPoster').src = posterUrl;
+
+            // Reset inputs
+            document.getElementById('noteInput').value = '';
+            document.getElementById('reviewInput').value = '';
+            setRating(0);
+            isPrivateNote = false;
+            updatePrivacyButtonUI();
+
+            // Reveal Log Module
+            document.getElementById('logModule').style.display = 'block';
+        }
+
+        function cancelSelection() {
+            selectedMovie = null;
+            document.getElementById('logModule').style.display = 'none';
+            document.getElementById('movieSearch').value = '';
+            document.getElementById('clearSearchBtn').style.display = 'none';
+            document.getElementById('status').innerText = '';
+            setRating(0);
+        }
+
+        function switchTab(tab) {
+            activeTab = tab;
+            const btnNote = document.getElementById('tabBtnNote');
+            const btnReview = document.getElementById('tabBtnReview');
+            const paneNote = document.getElementById('paneNote');
+            const paneReview = document.getElementById('paneReview');
+
+            if (tab === 'note') {
+                btnNote.classList.add('active');
+                btnReview.classList.remove('active');
+                paneNote.classList.add('active');
+                paneReview.classList.remove('active');
+            } else {
+                btnReview.classList.add('active');
+                btnNote.classList.remove('active');
+                paneReview.classList.add('active');
+                paneNote.classList.remove('active');
+            }
+        }
+
+        function togglePrivacy() {
+            isPrivateNote = !isPrivateNote;
+            updatePrivacyButtonUI();
+        }
+
+        function updatePrivacyButtonUI() {
+            const btn = document.getElementById('privacyToggleBtn');
+            const text = document.getElementById('privacyText');
+            const icon = document.getElementById('privacyIcon');
+
+            if (isPrivateNote) {
+                btn.classList.add('is-private');
+                text.innerText = "Private (Only You)";
+                icon.innerHTML = `<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>`;
+            } else {
+                btn.classList.remove('is-private');
+                text.innerText = "Public to Group";
+                icon.innerHTML = `<circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>`;
+            }
+        }
+
+        // -------------------------------------------------------------------------
+        // Star Rating Logic (Compulsory in Formal Review)
+        // -------------------------------------------------------------------------
+        function setRating(rating) {
+            currentRating = rating;
+            const picker = document.getElementById('starPicker');
+            const feedback = document.getElementById('ratingFeedback');
+            picker.classList.remove('invalid');
+
+            const stars = picker.querySelectorAll('.star-btn');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+
+            feedback.innerText = ratingLabels[rating] || "Select 1 to 5 stars";
+        }
+
+        function hoverRating(rating) {
+            const picker = document.getElementById('starPicker');
+            const stars = picker.querySelectorAll('.star-btn');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('hovered');
+                } else {
+                    star.classList.remove('hovered');
+                }
+            });
+            document.getElementById('ratingFeedback').innerText = ratingLabels[rating] || "";
+        }
+
+        function resetHoverRating() {
+            const picker = document.getElementById('starPicker');
+            const stars = picker.querySelectorAll('.star-btn');
+            stars.forEach(star => star.classList.remove('hovered'));
+            document.getElementById('ratingFeedback').innerText = ratingLabels[currentRating] || (currentRating > 0 ? ratingLabels[currentRating] : "Select 1 to 5 stars");
+        }
+
+        // -------------------------------------------------------------------------
+        // Publish & Live Optimistic Update
+        // -------------------------------------------------------------------------
+        async function publishEntry() {
+            if (isPublishing || !selectedMovie) return;
+
+            let entryContent = "";
+            let entryType = activeTab; // 'note' or 'review'
+
+            if (entryType === 'review') {
+                // Compulsory 5-star validation
+                if (!currentRating || currentRating < 1) {
+                    const picker = document.getElementById('starPicker');
+                    picker.classList.add('invalid');
+                    const feedback = document.getElementById('ratingFeedback');
+                    feedback.innerText = "Please select a star rating (Required)";
+                    feedback.style.color = "#f87171";
+                    return;
+                }
+                entryContent = document.getElementById('reviewInput').value.trim();
+            } else {
+                // Note tab
+                entryContent = document.getElementById('noteInput').value.trim();
+            }
+
             const statusEl = document.getElementById('status');
-            const dropdown = document.getElementById('dropdown');
 
-            dropdown.style.display = 'none';
-            document.getElementById('movieSearch').value = filmTitle;
+            // Construct optimistic item for immediate live rendering
+            const optimisticItem = {
+                id: 'opt_' + Date.now(),
+                ownerId: 'user_123',
+                userId: 'user_123',
+                filmId: selectedMovie.id.toString(),
+                filmTitle: selectedMovie.title,
+                year: selectedMovie.year,
+                posterPath: selectedMovie.posterPath,
+                entryType: entryType,
+                rating: entryType === 'review' ? currentRating : null,
+                review: entryContent,
+                isPrivate: entryType === 'note' ? isPrivateNote : false,
+                createdAt: new Date().toISOString()
+            };
 
-            statusEl.innerText = "Logging film to Cosmos DB...";
-            statusEl.style.color = "#aaa";
+            // 1. Optimistically Prepend to #feedList in DOM
+            const feedList = document.getElementById('feedList');
+            const loadingState = document.getElementById('feedLoadingState');
+            if (loadingState) {
+                loadingState.remove();
+            }
 
+            const cardElement = createFeedCardElement(optimisticItem);
+            cardElement.classList.add('optimistic-entry');
+            feedList.prepend(cardElement);
+
+            // Payload for backend hitting /api/log
+            const payload = {
+                filmId: selectedMovie.id.toString(),
+                title: selectedMovie.title,
+                year: selectedMovie.year,
+                userId: "user_123",
+                entryType: entryType,
+                rating: entryType === 'review' ? currentRating : null,
+                review: entryContent,
+                isPrivate: entryType === 'note' ? isPrivateNote : false,
+                posterPath: selectedMovie.posterPath
+            };
+
+            // Reset form
+            cancelSelection();
+            statusEl.innerText = entryType === 'review' ? "Review published!" : "Note logged!";
+            statusEl.style.color = "#4ade80";
+            setTimeout(() => {
+                if (statusEl.innerText.includes("published!") || statusEl.innerText.includes("logged!")) {
+                    statusEl.innerText = "";
+                }
+            }, 3000);
+
+            // 2. Perform backend POST to /api/log
             try {
+                isPublishing = true;
                 const response = await fetch(`${API_BASE}/log`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        filmId: filmId.toString(),
-                        title: filmTitle,
-                        year: year,
-                        userId: "user_123"
-                    })
+                    body: JSON.stringify(payload)
                 });
 
-                if (response.ok) {
-                    statusEl.innerText = `Success: "${filmTitle}" logged!`;
-                    statusEl.style.color = "#4ade80";
-                    setTimeout(() => {
-                        document.getElementById('movieSearch').value = '';
-                        statusEl.innerText = '';
-                    }, 3000);
-                } else {
+                if (!response.ok) {
                     const errText = await response.text();
-                    statusEl.innerText = `Backend Error: ${errText}`;
+                    console.error("Backend error logging film:", errText);
+                    statusEl.innerText = `Backend error: ${errText}`;
                     statusEl.style.color = "#f87171";
                 }
-            } catch (error) {
-                statusEl.innerText = "Network Error logging film.";
+            } catch (err) {
+                console.error("Network error logging film:", err);
+                statusEl.innerText = "Network Error: Saved locally in feed.";
                 statusEl.style.color = "#f87171";
+            } finally {
+                isPublishing = false;
             }
         }
+
+        // -------------------------------------------------------------------------
+        // Feed Card Builder (Read Receipts, No Likes, Comment button)
+        // -------------------------------------------------------------------------
+        function getRelativeTime(dateString) {
+            if (!dateString) return "Just now";
+            const past = new Date(dateString);
+            const now = new Date();
+            const diffSec = Math.floor((now - past) / 1000);
+
+            if (isNaN(diffSec) || diffSec < 45) return "Just now";
+            const diffMin = Math.floor(diffSec / 60);
+            if (diffMin < 60) return `${diffMin}m ago`;
+            const diffHours = Math.floor(diffMin / 60);
+            if (diffHours < 24) return `${diffHours}h ago`;
+            const diffDays = Math.floor(diffHours / 24);
+            if (diffDays < 7) return `${diffDays}d ago`;
+
+            return past.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        }
+
+        function buildStarDisplay(rating) {
+            const count = Math.max(0, Math.min(5, Math.round(Number(rating) || 5)));
+            let starsHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                starsHtml += `<span class="${i <= count ? 'filled' : 'empty'}">★</span>`;
+            }
+            return starsHtml;
+        }
+
+        function createFeedCardElement(item) {
+            const card = document.createElement('article');
+            card.className = 'feed-card';
+            card.id = `card-${item.id || Math.random().toString(36).substr(2, 9)}`;
+
+            const username = item.ownerId || item.userId || "user_123";
+            const relativeTime = getRelativeTime(item.createdAt);
+            const title = item.filmTitle || item.title || "Unknown Film";
+            const year = item.year ? `(${item.year})` : '';
+
+            // Poster URL
+            let posterSrc = '';
+            if (item.posterPath) {
+                posterSrc = item.posterPath.startsWith('http')
+                    ? item.posterPath
+                    : `https://image.tmdb.org/t/p/w185${item.posterPath}`;
+            }
+
+            // Determine if Review or Note
+            const isReview = item.entryType === 'review' || (item.rating && item.rating > 0);
+            const isPrivate = item.isPrivate === true;
+
+            // Content text
+            const textContent = item.review || (item.feedMessage ? item.feedMessage : "");
+
+            // Badge
+            let badgeHtml = '';
+            if (isPrivate) {
+                badgeHtml = `<span class="entry-badge private-badge">Private Note</span>`;
+            } else if (isReview) {
+                badgeHtml = `<span class="entry-badge review-badge">Review</span>`;
+            } else {
+                badgeHtml = `<span class="entry-badge note-badge">Note</span>`;
+            }
+
+            // Poster HTML
+            const posterHtml = posterSrc
+                ? `<img class="feed-movie-poster" src="${posterSrc}" alt="${title}" onerror="this.outerHTML='<div class=\\'feed-movie-poster-fallback\\'><svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\'><rect x=\\'2\\' y=\\'2\\' width=\\'20\\' height=\\'20\\' rx=\\'2.18\\'></rect><path d=\\'M7 2v20M17 2v20M2 12h20\\'></path></svg><span>${title}</span></div>'">`
+                : `<div class="feed-movie-poster-fallback">
+                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                         <rect x="2" y="2" width="20" height="20" rx="2.18"></rect>
+                         <path d="M7 2v20M17 2v20M2 12h20"></path>
+                     </svg>
+                     <span>${title}</span>
+                   </div>`;
+
+            // Star row only if formal review
+            const starRowHtml = isReview
+                ? `<div class="feed-star-row">${buildStarDisplay(item.rating || 5)}</div>`
+                : '';
+
+            // Read Receipts Mock UI
+            const readReceiptsHtml = `
+                <div class="read-receipts" title="Seen by members of your circle">
+                    <svg class="read-receipts-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <div class="read-avatars-stack">
+                        ${mockViewers.map(v => `<div class="read-avatar-micro" style="background:${v.color}">${v.initial}</div>`).join('')}
+                    </div>
+                    <span class="read-text">Seen by Maya, Alex, Sam</span>
+                </div>
+            `;
+
+            card.innerHTML = `
+                <!-- Card Header -->
+                <div class="feed-card-header">
+                    <div class="feed-user-meta">
+                        <div class="feed-avatar">${username.charAt(0).toUpperCase()}</div>
+                        <div class="feed-user-details">
+                            <div class="feed-username-row">
+                                <span class="feed-username">${username}</span>
+                                ${badgeHtml}
+                            </div>
+                            <span class="feed-time">${relativeTime}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Body (Movie Poster + Content) -->
+                <div class="feed-card-body">
+                    ${posterHtml}
+                    <div class="feed-content-col">
+                        <div class="feed-movie-heading">
+                            <span class="feed-movie-title">${title}</span>
+                            <span class="feed-movie-year">${year}</span>
+                        </div>
+                        ${starRowHtml}
+                        ${textContent 
+                            ? `<div class="feed-body-text">${escapeHtml(textContent)}</div>` 
+                            : `<div class="feed-default-msg">${isReview ? 'Logged without written critique.' : 'Logged film note.'}</div>`}
+                    </div>
+                </div>
+
+                <!-- Card Footer: Read Receipts & Comment Button (NO LIKES) -->
+                <div class="feed-card-footer">
+                    ${readReceiptsHtml}
+                    <button class="comment-btn" onclick="openCommentBox(this)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        <span>Comment</span>
+                    </button>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.innerText = text;
+            return div.innerHTML;
+        }
+
+        function openCommentBox(btn) {
+            const card = btn.closest('.feed-card');
+            let box = card.querySelector('.comment-input-row');
+            if (box) {
+                box.remove();
+                return;
+            }
+
+            box = document.createElement('div');
+            box.className = 'comment-input-row';
+            box.style.marginTop = '10px';
+            box.style.display = 'flex';
+            box.style.gap = '8px';
+            box.innerHTML = `
+                <input type="text" placeholder="Write a comment..." style="flex-grow:1; background:#262626; border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:#fff; padding:7px 10px; font-size:12.5px; outline:none;">
+                <button style="background:#4ade80; border:none; border-radius:6px; padding:0 12px; font-size:12px; font-weight:600; color:#052e16; cursor:pointer;" onclick="this.parentElement.remove()">Post</button>
+            `;
+            card.appendChild(box);
+            box.querySelector('input').focus();
+        }
+
+        // -------------------------------------------------------------------------
+        // Load Feed from Backend (/api/getFeed)
+        // -------------------------------------------------------------------------
         async function loadFeed() {
             const feedList = document.getElementById('feedList');
             try {
@@ -282,22 +1638,29 @@
                 const items = await response.json();
                 feedList.innerHTML = '';
 
-                items.forEach(item => {
-                    const date = new Date(item.createdAt).toLocaleString();
-                    const feedDiv = document.createElement('div');
-                    feedDiv.className = 'feed-item';
-                    feedDiv.innerHTML = `
-                        <span class="feed-time">${date}</span>
-                        <span>${item.feedMessage}</span>
+                if (!items || items.length === 0) {
+                    feedList.innerHTML = `
+                        <div class="empty-feed-state">
+                            No circle activity yet. Search a film to log a note or review!
+                        </div>
                     `;
-                    feedList.appendChild(feedDiv);
+                    return;
+                }
+
+                items.forEach(item => {
+                    const card = createFeedCardElement(item);
+                    feedList.appendChild(card);
                 });
             } catch (error) {
-                console.error("Could not load feed");
+                console.error("Could not load feed:", error);
+                const loadingState = document.getElementById('feedLoadingState');
+                if (loadingState) {
+                    loadingState.innerText = "Unable to connect to group activity feed.";
+                }
             }
         }
 
-        // Load feed on startup
+        // Initial Load
         loadFeed();
     </script>
 </body>
