@@ -259,3 +259,36 @@ app.storageQueue('feedWorker', {
     }
   }
 });
+
+// -----------------------------------------------------------------------------
+// 4. getFeed (HTTP GET)
+// -----------------------------------------------------------------------------
+app.http('getFeed', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  handler: async (request, context) => {
+    try {
+      const db = getCosmosDatabase();
+      const feedContainer = db.container('feed');
+
+      // Query the feed container, ordered by newest first
+      const querySpec = {
+        query: 'SELECT TOP 10 * FROM c ORDER BY c.createdAt DESC'
+      };
+
+      const { resources: feedItems } = await feedContainer.items.query(querySpec).fetchAll();
+
+      return {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+        jsonBody: feedItems
+      };
+    } catch (err) {
+      context.error('Error fetching feed:', err);
+      return {
+        status: 500,
+        jsonBody: { error: 'Failed to retrieve activity feed.' }
+      };
+    }
+  }
+});
