@@ -391,8 +391,15 @@
         }
 
         @keyframes slideDownFade {
-            from { opacity: 0; transform: translateY(-6px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .selected-movie-header {
@@ -661,8 +668,15 @@
         }
 
         @keyframes instaSlideIn {
-            from { opacity: 0; transform: translateY(-12px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* 1. Header */
@@ -935,8 +949,13 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         .insta-comment-input {
@@ -998,7 +1017,8 @@
         <a href="#" class="brand">
             <div class="brand-logo">
                 <svg viewBox="0 0 24 24">
-                    <rect x="2" y="2" width="20" height="20" rx="2.18" stroke="currentColor" stroke-width="2" fill="none"></rect>
+                    <rect x="2" y="2" width="20" height="20" rx="2.18" stroke="currentColor" stroke-width="2"
+                        fill="none"></rect>
                     <line x1="7" y1="2" x2="7" y2="22" stroke="currentColor" stroke-width="2"></line>
                     <line x1="17" y1="2" x2="17" y2="22" stroke="currentColor" stroke-width="2"></line>
                     <line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"></line>
@@ -1023,13 +1043,15 @@
             <div class="login-prompt-btns">
                 <a href="/.auth/login/github" class="auth-login-btn">
                     <svg viewBox="0 0 24 24">
-                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+                        <path
+                            d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
                     </svg>
                     <span>GitHub</span>
                 </a>
                 <a href="/.auth/login/twitter" class="auth-login-btn">
                     <svg viewBox="0 0 24 24">
-                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                        <path
+                            d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                     </svg>
                     <span>X</span>
                 </a>
@@ -1066,7 +1088,7 @@
                 <!-- Selected Movie Banner -->
                 <div class="selected-movie-header">
                     <img id="selectedPosterThumb" class="selected-poster-thumb" src="" alt="Poster"
-                        onerror="this.src='https://via.placeholder.com/92x138/1f1f1f/777777?text=No+Poster'">
+                        onerror="this.onerror=null; this.src='[https://via.placeholder.com/777777?text=No+Poster](https://via.placeholder.com/777777?text=No+Poster)';">
                     <div class="selected-details">
                         <div id="selectedTitle" class="selected-title"></div>
                         <div id="selectedYear" class="selected-year"></div>
@@ -1078,11 +1100,16 @@
                 <div class="star-rating-row">
                     <span class="rating-label">Rating</span>
                     <div class="star-picker" id="starPicker">
-                        <button type="button" class="star-btn" data-val="1" onclick="setRating(1)" onmouseover="hoverRating(1)" onmouseleave="resetHoverRating()">★</button>
-                        <button type="button" class="star-btn" data-val="2" onclick="setRating(2)" onmouseover="hoverRating(2)" onmouseleave="resetHoverRating()">★</button>
-                        <button type="button" class="star-btn" data-val="3" onclick="setRating(3)" onmouseover="hoverRating(3)" onmouseleave="resetHoverRating()">★</button>
-                        <button type="button" class="star-btn" data-val="4" onclick="setRating(4)" onmouseover="hoverRating(4)" onmouseleave="resetHoverRating()">★</button>
-                        <button type="button" class="star-btn" data-val="5" onclick="setRating(5)" onmouseover="hoverRating(5)" onmouseleave="resetHoverRating()">★</button>
+                        <button type="button" class="star-btn" data-val="1" onclick="setRating(1)"
+                            onmouseover="hoverRating(1)" onmouseleave="resetHoverRating()">★</button>
+                        <button type="button" class="star-btn" data-val="2" onclick="setRating(2)"
+                            onmouseover="hoverRating(2)" onmouseleave="resetHoverRating()">★</button>
+                        <button type="button" class="star-btn" data-val="3" onclick="setRating(3)"
+                            onmouseover="hoverRating(3)" onmouseleave="resetHoverRating()">★</button>
+                        <button type="button" class="star-btn" data-val="4" onclick="setRating(4)"
+                            onmouseover="hoverRating(4)" onmouseleave="resetHoverRating()">★</button>
+                        <button type="button" class="star-btn" data-val="5" onclick="setRating(5)"
+                            onmouseover="hoverRating(5)" onmouseleave="resetHoverRating()">★</button>
                     </div>
                 </div>
 
@@ -1093,7 +1120,8 @@
                 <!-- Bottom Row: Public vs. Private Toggle + Actions -->
                 <div class="module-bottom-bar">
                     <!-- Toggle Switch -->
-                    <div class="privacy-toggle-container" onclick="togglePrivacySwitch()" title="Toggle public or private visibility">
+                    <div class="privacy-toggle-container" onclick="togglePrivacySwitch()"
+                        title="Toggle public or private visibility">
                         <div id="privacySwitchTrack" class="switch-track active">
                             <div class="switch-thumb"></div>
                         </div>
@@ -1105,7 +1133,8 @@
                         <button class="btn-cancel" onclick="cancelSelection()">Cancel</button>
                         <button id="publishBtn" class="btn-publish" onclick="publishLogEntry()">
                             <span>Publish</span>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5">
                                 <line x1="22" y1="2" x2="11" y2="13"></line>
                                 <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                             </svg>
@@ -1269,8 +1298,8 @@
 
                 results.slice(0, 6).forEach(film => {
                     const year = film.release_date ? film.release_date.split('-')[0] : 'Unknown';
-                    const thumbUrl = film.poster_path 
-                        ? `https://image.tmdb.org/t/p/w92${film.poster_path}` 
+                    const thumbUrl = film.poster_path
+                        ? `https://image.tmdb.org/t/p/w92${film.poster_path}`
                         : 'https://via.placeholder.com/92x138/1f1f1f/777777?text=No+Poster';
 
                     const item = document.createElement('div');
