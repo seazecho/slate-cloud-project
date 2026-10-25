@@ -594,13 +594,16 @@ app.http('getWatchlist', {
 // -----------------------------------------------------------------------------
 // 10. getCalendarLogs (HTTP GET)
 // -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// 10. getCalendarLogs (HTTP GET) - Bulletproof Version
+// -----------------------------------------------------------------------------
 app.http('getCalendarLogs', {
   methods: ['GET'],
   authLevel: 'anonymous',
   handler: async (request, context) => {
     try {
-      const monthPrefix = request.query.get('month'); // Expected format: "YYYY-MM"
-      if (!monthPrefix) return { status: 400, jsonBody: { error: 'Month prefix required (YYYY-MM)' } };
+      const monthPrefix = request.query.get('month'); // "YYYY-MM"
+      if (!monthPrefix) return { status: 400, jsonBody: { error: 'Month prefix required' } };
 
       const principalHeader = request.headers.get('x-ms-client-principal') || request.headers.get('X-MS-CLIENT-PRINCIPAL');
       if (!principalHeader) return { status: 401, jsonBody: { error: 'Unauthorized' } };
@@ -608,25 +611,31 @@ app.http('getCalendarLogs', {
 
       const db = getCosmosDatabase();
 
-      // Get the social graph (you + friends)
       let followingIds = [userId];
       try {
         const { resource: userProfile } = await db.container('users').item(userId, userId).read();
         if (userProfile && Array.isArray(userProfile.following)) followingIds.push(...userProfile.following);
       } catch (e) { }
 
-      const quotedIds = followingIds.map(id => `'${id}'`).join(',');
+      const allLogs = [];
 
-      // Query logs that start with the target month (Removed ORDER BY to prevent Cosmos DB crash)
-      const { resources: logs } = await db.container('logs').items.query({
-        query: `SELECT * FROM c WHERE c.userId IN (${quotedIds}) AND STARTSWITH(c.loggedAt, @month)`,
-        parameters: [{ name: '@month', value: monthPrefix }]
-      }).fetchAll();
+      // Safely query each user individually to prevent cross-partition crashes
+      for (const uid of followingIds) {
+        try {
+          const { resources } = await db.container('logs').items.query({
+            query: `SELECT * FROM c WHERE c.userId = @uid AND STARTSWITH(c.loggedAt, @month)`,
+            parameters: [{ name: '@uid', value: uid }, { name: '@month', value: monthPrefix }]
+          }).fetchAll();
+          allLogs.push(...resources);
+        } catch (e) {
+          context.error(`Failed to fetch calendar logs for ${uid}`, e);
+        }
+      }
 
-      // Sort in memory instead
-      logs.sort((a, b) => new Date(a.loggedAt) - new Date(b.loggedAt));
+      // Sort by date chronologically
+      allLogs.sort((a, b) => new Date(a.loggedAt) - new Date(b.loggedAt));
 
-      return { status: 200, headers: { 'Content-Type': 'application/json' }, jsonBody: logs };
+      return { status: 200, headers: { 'Content-Type': 'application/json' }, jsonBody: allLogs };
     } catch (err) {
       context.error('Calendar error:', err);
       return { status: 500, jsonBody: { error: 'Failed to load calendar logs' } };

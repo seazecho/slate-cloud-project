@@ -170,14 +170,37 @@
         }
 
         /* -------------------------------------------------------------------------
-           Feed Layout Container
+           Feed Layout Container (FULL WIDTH DESKTOP)
         -------------------------------------------------------------------------- */
         .feed-container {
             width: 100%;
-            max-width: 480px;
+            max-width: 1200px;
+            /* Expanded for full PC screen */
             display: flex;
             flex-direction: column;
             gap: 20px;
+            margin: 0 auto;
+        }
+
+        .app-header {
+            width: 100%;
+            max-width: 1200px;
+            /* Expanded for full PC screen */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 0 auto 22px auto;
+            padding: 0 4px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Instagram-Style Feed Posts -> Converted to Responsive Grid */
+        #feedList {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            width: 100%;
         }
 
         /* Unauthenticated Prompt */
@@ -1978,106 +2001,44 @@
             card.className = 'insta-card';
             card.id = `card-${item.id || Math.random().toString(36).substr(2, 9)}`;
 
-            const username = item.username || item.ownerId || item.userId || "user_123"; // FIX: Prioritize username
+            const username = item.username || item.ownerId || item.userId || "user_123";
             const relativeTime = getRelativeTime(item.createdAt);
             const title = item.filmTitle || item.title || "Untitled Film";
             const year = item.year ? `(${item.year})` : '';
 
-            // High-Resolution TMDB Poster (w500)
-            let posterSrc = '';
-            if (item.posterPath) {
-                posterSrc = item.posterPath.startsWith('http')
-                    ? item.posterPath
-                    : `https://image.tmdb.org/t/p/w500${item.posterPath}`;
+            // Fix broken images & enforce secure URLs
+            let posterSrc = item.posterPath || '';
+            if (posterSrc && !posterSrc.startsWith('http')) {
+                posterSrc = `https://image.tmdb.org/t/p/w500${posterSrc}`;
+            } else if (!posterSrc) {
+                posterSrc = 'https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster';
             }
 
-            // Media Element (Full-width prominent image with fallback)
-            const mediaHtml = posterSrc
-                ? `<div class="insta-media-container">
-                     <img class="insta-poster-img" src="${posterSrc}" alt="${escapeHtml(title)}"
-                          onerror="this.parentElement.innerHTML='<div class=\\'insta-poster-fallback\\'><svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\'><rect x=\\'2\\' y=\\'2\\' width=\\'20\\' height=\\'20\\' rx=\\'2.18\\'></rect><path d=\\'M7 2v20M17 2v20M2 12h20\\'></path></svg><span>${escapeHtml(title)}</span></div>'">
-                   </div>`
-                : `<div class="insta-media-container">
-                     <div class="insta-poster-fallback">
-                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                             <rect x="2" y="2" width="20" height="20" rx="2.18"></rect>
-                             <path d="M7 2v20M17 2v20M2 12h20"></path>
-                         </svg>
-                         <span>${escapeHtml(title)}</span>
-                     </div>
-                   </div>`;
-
-            // Star Rating
             const starsHtml = item.rating ? buildStarDisplay(item.rating) : '';
-
-            // Text content
             const captionBody = item.review || (item.feedMessage ? item.feedMessage : "");
 
-            // Comment input placeholder
-            const placeholderUser = currentUser ? `Add a comment as ${currentUser}...` : "Add a comment...";
-
             card.innerHTML = `
-                <!-- 1. Header: Circular Profile Pic, Username, Relative Timestamp -->
                 <div class="insta-header">
                     <div class="insta-user-meta">
                         <div class="insta-avatar clickable-user" onclick="openProfile('${escapeHtml(username)}')">${escapeHtml(username.charAt(0).toUpperCase())}</div>
-<div class="insta-user-info">
+                        <div class="insta-user-info">
                             <span class="insta-username clickable-user" onclick="openProfile('${escapeHtml(username)}')">${escapeHtml(username)}</span>
                             <span class="insta-dot">•</span>
                             <span class="insta-time">${relativeTime}</span>
                         </div>
                     </div>
-                    <button class="insta-options-btn" title="Options">•••</button>
                 </div>
 
-                <!-- 2. Media: Large, Prominent Full-Width Movie Poster -->
-                ${mediaHtml}
-
-                <!-- 3. Action Bar: Seen By Read Receipts + Comment Icon -->
-                <div class="insta-action-bar">
-                    <div class="insta-seen-by" title="Seen by members of your circle">
-                        <svg class="insta-eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                        <div class="insta-avatar-stack">
-                            ${mockViewers.map(v => `<div class="insta-micro-avatar" style="background:${v.color}">${v.initial}</div>`).join('')}
-                        </div>
-                        <span class="insta-seen-text">Seen by Maya, Alex, Sam</span>
-                    </div>
-
-                    <button class="insta-comment-icon-btn" onclick="toggleCommentBox(this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                        </svg>
-                        <span>Comment</span>
-                    </button>
+                <div class="insta-media-container" style="cursor: pointer;" onclick="showFilmDetails('${item.filmId}', '${escapeHtml(title)}', '${posterSrc}')">
+                    <img class="insta-poster-img" src="${posterSrc}" alt="${escapeHtml(title)}" onerror="this.src='https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster'">
                 </div>
 
-                <!-- 4. Caption: Stars & Review Content -->
-                <div class="insta-caption-area">
-                    <div class="insta-film-title-row">
-                        <span>${escapeHtml(title)} ${year}</span>
-                    </div>
+                <div class="insta-caption-area" style="padding-top: 14px;">
+                    <div class="insta-film-title-row">${escapeHtml(title)} ${year}</div>
                     ${starsHtml}
-                    ${captionBody ? `
-                        <div class="insta-caption-text">
-                            <span class="insta-caption-username">${escapeHtml(username)}</span>
-                            <span>${escapeHtml(captionBody)}</span>
-                        </div>
-                    ` : ''}
-                </div>
-
-                <!-- 5. Local Interactive Comments Section -->
-                <div class="insta-comments-section">
-                    <div class="insta-comments-list"></div>
-                    <form class="insta-comment-input-form" onsubmit="handlePostComment(event, this)">
-                        <input type="text" class="insta-comment-input" placeholder="${escapeHtml(placeholderUser)}" required>
-                        <button type="submit" class="insta-comment-post-btn">Post</button>
-                    </form>
+                    ${captionBody ? `<div class="insta-caption-text" style="margin-top: 6px;"><span class="insta-caption-username">${escapeHtml(username)}</span><span>${escapeHtml(captionBody)}</span></div>` : ''}
                 </div>
             `;
-
             return card;
         }
 
@@ -2287,8 +2248,12 @@
                     return;
                 }
                 list.forEach(item => {
-                    const poster = item.posterPath || 'https://via.placeholder.com/92x138/1f1f1f/777777?text=No+Poster';
-                    grid.innerHTML += `<img class="grid-item" src="${poster}" alt="${escapeHtml(item.title)}" title="${escapeHtml(item.title)}">`;
+                    let poster = item.posterPath || '';
+                    if (poster && !poster.startsWith('http')) poster = `https://image.tmdb.org/t/p/w500${poster}`;
+                    if (!poster) poster = 'https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster';
+
+                    // ADDED ONCLICK HERE
+                    grid.innerHTML += `<img class="grid-item" style="cursor:pointer;" onclick="showFilmDetails('${item.filmId}', '${escapeHtml(item.title)}', '${poster}')" src="${poster}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster'">`;
                 });
             } catch (err) {
                 grid.innerHTML = '<div style="color:#f87171; grid-column: span 3; text-align: center;">Error loading watchlist.</div>';
@@ -2323,11 +2288,10 @@
                 const res = await fetch(`${API_BASE}/getCalendarLogs?month=${apiMonth}`, { headers });
                 const logs = await res.json();
 
-                // Group logs by exact day
                 const logsByDay = {};
                 if (Array.isArray(logs)) {
                     logs.forEach(log => {
-                        const dayStr = log.createdAt.split('T')[0];
+                        const dayStr = log.loggedAt ? log.loggedAt.split('T')[0] : log.createdAt.split('T')[0];
                         if (!logsByDay[dayStr]) logsByDay[dayStr] = [];
                         logsByDay[dayStr].push(log);
                     });
@@ -2340,19 +2304,21 @@
                 const firstDay = new Date(year, month, 1).getDay();
                 const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-                // Pad empty slots before the 1st
                 for (let i = 0; i < firstDay; i++) {
                     grid.innerHTML += `<div class="calendar-cell" style="background: transparent; border: none;"></div>`;
                 }
 
-                // Render active days
                 for (let i = 1; i <= daysInMonth; i++) {
                     const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
                     const dayLogs = logsByDay[dayStr] || [];
 
                     let postersHtml = dayLogs.slice(0, 4).map(l => {
-                        const p = l.posterPath || l.thumbUrl || 'https://via.placeholder.com/92x138/1f1f1f/777777?text=No+Poster';
-                        return `<img class="calendar-mini-poster" src="${p}" title="${escapeHtml(l.filmTitle)} by ${escapeHtml(l.ownerId || l.userId)}">`;
+                        let p = l.posterPath || l.thumbUrl || '';
+                        if (p && !p.startsWith('http')) p = `https://image.tmdb.org/t/p/w500${p}`;
+                        if (!p) p = 'https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster';
+
+                        // ADDED ONCLICK HERE
+                        return `<img class="calendar-mini-poster" style="cursor:pointer;" onclick="showFilmDetails('${l.filmId}', '${escapeHtml(l.filmTitle)}', '${p}')" src="${p}" onerror="this.src='https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster'">`;
                     }).join('');
 
                     grid.innerHTML += `
