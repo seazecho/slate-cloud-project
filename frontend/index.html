@@ -43,12 +43,12 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 28px 14px 80px;
+            padding: 24px 14px 80px;
             -webkit-font-smoothing: antialiased;
         }
 
         /* -------------------------------------------------------------------------
-           Header & Branding
+           Header & Top Branding
         -------------------------------------------------------------------------- */
         .app-header {
             width: 100%;
@@ -58,6 +58,8 @@
             justify-content: space-between;
             margin-bottom: 22px;
             padding: 0 4px;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .brand {
@@ -92,7 +94,41 @@
             letter-spacing: 3px;
         }
 
-        .user-pill {
+        /* Authentication Container */
+        #authContainer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .auth-login-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 6px 11px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.15s ease;
+        }
+
+        .auth-login-btn:hover {
+            background: var(--surface-hover);
+            border-color: var(--border-focus);
+            transform: translateY(-1px);
+        }
+
+        .auth-login-btn svg {
+            width: 13px;
+            height: 13px;
+            fill: currentColor;
+        }
+
+        .auth-user-pill {
             display: flex;
             align-items: center;
             gap: 8px;
@@ -105,7 +141,7 @@
             color: var(--text-secondary);
         }
 
-        .user-avatar-sm {
+        .auth-avatar {
             width: 24px;
             height: 24px;
             border-radius: 50%;
@@ -116,6 +152,21 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            text-transform: uppercase;
+        }
+
+        .auth-logout-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: color 0.15s ease;
+        }
+
+        .auth-logout-link:hover {
+            color: #f87171;
         }
 
         /* -------------------------------------------------------------------------
@@ -126,11 +177,38 @@
             max-width: 480px;
             display: flex;
             flex-direction: column;
-            gap: 22px;
+            gap: 20px;
+        }
+
+        /* Unauthenticated Prompt */
+        .login-prompt-card {
+            background: var(--surface-color);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--shadow-card);
+            color: var(--text-secondary);
+            font-size: 13.5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .login-prompt-text {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .login-prompt-btns {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         /* -------------------------------------------------------------------------
-           Unified Logging Module
+           Unified Logging Module (Shown only when logged in)
         -------------------------------------------------------------------------- */
         .logger-card {
             background: var(--surface-color);
@@ -444,7 +522,7 @@
             color: var(--text-muted);
         }
 
-        /* Bottom Row: Toggle Switch + Publish */
+        /* Bottom Row: Toggle Switch + Actions */
         .module-bottom-bar {
             display: flex;
             align-items: center;
@@ -614,6 +692,7 @@
             font-weight: 700;
             color: var(--accent-green);
             flex-shrink: 0;
+            text-transform: uppercase;
         }
 
         .insta-user-info {
@@ -816,7 +895,7 @@
             margin-right: 6px;
         }
 
-        /* 5. Local Interactive Comments List & Input Field */
+        /* 5. Local Interactive Comments Section */
         .insta-comments-section {
             border-top: 1px solid rgba(255, 255, 255, 0.05);
             padding: 10px 16px 12px;
@@ -932,16 +1011,33 @@
             <h1 class="brand-title">SLATE</h1>
         </a>
 
-        <div class="user-pill">
-            <div class="user-avatar-sm">U</div>
-            <span>user_123</span>
-        </div>
+        <!-- Dynamic Auth Container -->
+        <div id="authContainer"></div>
     </header>
 
     <!-- Main Container -->
     <main class="feed-container">
-        <!-- Unified Log Film Module -->
-        <section class="logger-card">
+        <!-- Guest Message (shown when unauthenticated) -->
+        <div id="loginPromptCard" class="login-prompt-card" style="display: none;">
+            <span>Log in to add films to the circle.</span>
+            <div class="login-prompt-btns">
+                <a href="/.auth/login/github" class="auth-login-btn">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+                    </svg>
+                    <span>GitHub</span>
+                </a>
+                <a href="/.auth/login/twitter" class="auth-login-btn">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                    <span>X</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Unified Log Film Module (shown when authenticated) -->
+        <section class="logger-card" id="loggerCard" style="display: none;">
             <div class="logger-title-row">
                 <span class="logger-title">
                     <span class="logger-title-dot"></span>
@@ -1031,6 +1127,7 @@
         // CRITICAL RULE: Preserve exact API_BASE
         const API_BASE = "https://func-slate-app-wijb3v.azurewebsites.net/api";
 
+        let currentUser = null; // Dynamically set from Azure SWA /.auth/me
         let debounceTimer;
         let selectedMovie = null;
         let currentRating = 0;
@@ -1045,7 +1142,86 @@
         ];
 
         // -------------------------------------------------------------------------
-        // Search & Dropdown
+        // Azure Static Web Apps Authentication State Management
+        // -------------------------------------------------------------------------
+        async function checkAuth() {
+            const authContainer = document.getElementById('authContainer');
+            const loggerCard = document.getElementById('loggerCard');
+            const loginPromptCard = document.getElementById('loginPromptCard');
+
+            try {
+                const response = await fetch('/.auth/me');
+                if (!response.ok) {
+                    throw new Error(`Failed to check auth status (${response.status})`);
+                }
+                const payload = await response.json();
+                const clientPrincipal = payload.clientPrincipal;
+
+                if (clientPrincipal && clientPrincipal.userDetails) {
+                    currentUser = clientPrincipal.userDetails;
+                    renderAuthenticatedUI(clientPrincipal);
+                } else {
+                    currentUser = null;
+                    renderUnauthenticatedUI();
+                }
+            } catch (err) {
+                // Outside Azure SWA environment (e.g. local dev without SWA CLI emulator)
+                console.warn("Could not query /.auth/me. Defaulting to unauthenticated:", err);
+                currentUser = null;
+                renderUnauthenticatedUI();
+            }
+        }
+
+        function renderUnauthenticatedUI() {
+            const authContainer = document.getElementById('authContainer');
+            const loggerCard = document.getElementById('loggerCard');
+            const loginPromptCard = document.getElementById('loginPromptCard');
+
+            // Render GitHub & X login buttons in header
+            authContainer.innerHTML = `
+                <a href="/.auth/login/github" class="auth-login-btn" title="Login with GitHub">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+                    </svg>
+                    <span>Login with GitHub</span>
+                </a>
+                <a href="/.auth/login/twitter" class="auth-login-btn" title="Login with X">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                    <span>Login with X</span>
+                </a>
+            `;
+
+            // Completely hide logger card & display message
+            loggerCard.style.display = 'none';
+            loginPromptCard.style.display = 'flex';
+        }
+
+        function renderAuthenticatedUI(clientPrincipal) {
+            const authContainer = document.getElementById('authContainer');
+            const loggerCard = document.getElementById('loggerCard');
+            const loginPromptCard = document.getElementById('loginPromptCard');
+
+            const username = clientPrincipal.userDetails || "User";
+            const initial = username.charAt(0).toUpperCase();
+
+            // Populate authContainer with real userDetails and logout link
+            authContainer.innerHTML = `
+                <div class="auth-user-pill">
+                    <div class="auth-avatar">${escapeHtml(initial)}</div>
+                    <span>${escapeHtml(username)}</span>
+                    <a href="/.auth/logout" class="auth-logout-link" title="Logout">Logout</a>
+                </div>
+            `;
+
+            // Reveal logger card and hide guest prompt
+            loggerCard.style.display = 'block';
+            loginPromptCard.style.display = 'none';
+        }
+
+        // -------------------------------------------------------------------------
+        // Search & TMDB Visual Dropdown
         // -------------------------------------------------------------------------
         function debounceSearch() {
             clearTimeout(debounceTimer);
@@ -1103,7 +1279,7 @@
                     item.innerHTML = `
                         <img class="dropdown-item-poster" src="${thumbUrl}" alt="Poster" onerror="this.src='https://via.placeholder.com/92x138/1f1f1f/777777?text=No+Poster'">
                         <div class="dropdown-item-info">
-                            <span class="dropdown-item-title">${film.title}</span>
+                            <span class="dropdown-item-title">${escapeHtml(film.title)}</span>
                             <span class="dropdown-item-year">${year}</span>
                         </div>
                         <span class="dropdown-item-select-hint">Select</span>
@@ -1144,7 +1320,7 @@
             isPublic = true;
             updatePrivacyToggleUI();
 
-            // Reveal unified module
+            // Reveal module
             document.getElementById('logModule').style.display = 'block';
         }
 
@@ -1161,7 +1337,6 @@
         // Star Rating Handlers
         // -------------------------------------------------------------------------
         function setRating(rating) {
-            // Toggle rating off if clicking the already selected star
             if (currentRating === rating) {
                 currentRating = 0;
             } else {
@@ -1218,19 +1393,20 @@
         }
 
         // -------------------------------------------------------------------------
-        // Publish & Live Optimistic Update
+        // Publish & Live Optimistic Update (using real authenticated currentUser)
         // -------------------------------------------------------------------------
         async function publishLogEntry() {
             if (isPublishing || !selectedMovie) return;
 
             const reviewText = document.getElementById('logReviewText').value.trim();
             const statusEl = document.getElementById('status');
+            const activeUsername = currentUser || "user_123";
 
             // Optimistic Item
             const optimisticItem = {
                 id: 'opt_' + Date.now(),
-                ownerId: 'user_123',
-                userId: 'user_123',
+                ownerId: activeUsername,
+                userId: activeUsername,
                 filmId: selectedMovie.id.toString(),
                 filmTitle: selectedMovie.title,
                 year: selectedMovie.year,
@@ -1252,12 +1428,12 @@
             card.classList.add('optimistic-entry');
             feedList.prepend(card);
 
-            // Backend payload
+            // Backend payload with real authenticated username
             const payload = {
                 filmId: selectedMovie.id.toString(),
                 title: selectedMovie.title,
                 year: selectedMovie.year,
-                userId: "user_123",
+                userId: activeUsername,
                 rating: currentRating > 0 ? currentRating : null,
                 review: reviewText,
                 isPrivate: !isPublic,
@@ -1339,7 +1515,7 @@
             const title = item.filmTitle || item.title || "Untitled Film";
             const year = item.year ? `(${item.year})` : '';
 
-            // High-Resolution TMDB Poster (w500 or w780)
+            // High-Resolution TMDB Poster (w500)
             let posterSrc = '';
             if (item.posterPath) {
                 posterSrc = item.posterPath.startsWith('http')
@@ -1369,13 +1545,16 @@
             // Text content
             const captionBody = item.review || (item.feedMessage ? item.feedMessage : "");
 
+            // Comment input placeholder
+            const placeholderUser = currentUser ? `Add a comment as ${currentUser}...` : "Add a comment...";
+
             card.innerHTML = `
                 <!-- 1. Header: Circular Profile Pic, Username, Relative Timestamp -->
                 <div class="insta-header">
                     <div class="insta-user-meta">
-                        <div class="insta-avatar">${username.charAt(0).toUpperCase()}</div>
+                        <div class="insta-avatar">${escapeHtml(username.charAt(0).toUpperCase())}</div>
                         <div class="insta-user-info">
-                            <span class="insta-username">${username}</span>
+                            <span class="insta-username">${escapeHtml(username)}</span>
                             <span class="insta-dot">•</span>
                             <span class="insta-time">${relativeTime}</span>
                         </div>
@@ -1415,7 +1594,7 @@
                     ${starsHtml}
                     ${captionBody ? `
                         <div class="insta-caption-text">
-                            <span class="insta-caption-username">${username}</span>
+                            <span class="insta-caption-username">${escapeHtml(username)}</span>
                             <span>${escapeHtml(captionBody)}</span>
                         </div>
                     ` : ''}
@@ -1425,7 +1604,7 @@
                 <div class="insta-comments-section">
                     <div class="insta-comments-list"></div>
                     <form class="insta-comment-input-form" onsubmit="handlePostComment(event, this)">
-                        <input type="text" class="insta-comment-input" placeholder="Add a comment as user_123..." required>
+                        <input type="text" class="insta-comment-input" placeholder="${escapeHtml(placeholderUser)}" required>
                         <button type="submit" class="insta-comment-post-btn">Post</button>
                     </form>
                 </div>
@@ -1435,6 +1614,7 @@
         }
 
         function escapeHtml(text) {
+            if (!text) return '';
             const div = document.createElement('div');
             div.innerText = text;
             return div.innerHTML;
@@ -1462,11 +1642,12 @@
 
             const card = form.closest('.insta-card');
             const commentsList = card.querySelector('.insta-comments-list');
+            const author = currentUser || "user_123";
 
             // Append new comment locally
             const commentItem = document.createElement('div');
             commentItem.className = 'insta-comment-item';
-            commentItem.innerHTML = `<strong>user_123</strong><span>${escapeHtml(commentText)}</span>`;
+            commentItem.innerHTML = `<strong>${escapeHtml(author)}</strong><span>${escapeHtml(commentText)}</span>`;
             commentsList.appendChild(commentItem);
 
             input.value = '';
@@ -1487,7 +1668,7 @@
                 if (!items || items.length === 0) {
                     feedList.innerHTML = `
                         <div class="empty-feed-state">
-                            No films in the circle feed yet. Search above to log the first one!
+                            No films in the circle feed yet. Log in to share the first film!
                         </div>
                     `;
                     return;
@@ -1506,7 +1687,10 @@
             }
         }
 
-        // Startup
+        // -------------------------------------------------------------------------
+        // Initialization
+        // -------------------------------------------------------------------------
+        checkAuth();
         loadFeed();
     </script>
 </body>
