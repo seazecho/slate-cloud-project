@@ -292,3 +292,102 @@ app.http('getFeed', {
     }
   }
 });
+
+// -----------------------------------------------------------------------------
+// 5. syncUser (HTTP GET & POST)
+// -----------------------------------------------------------------------------
+app.http('syncUser', {
+  methods: ['GET', 'POST'],
+  authLevel: 'anonymous',
+  handler: async (request, context) => {
+    try {
+      // 1. Read x-ms-client-principal header (from Azure SWA)
+      const principalHeader =
+        request.headers.get('x-ms-client-principal') ||
+        request.headers.get('X-MS-CLIENT-PRINCIPAL');
+
+      if (!principalHeader) {
+        return {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+          jsonBody: { error: 'Missing x-ms-client-principal header.' }
+        };
+      }
+
+      // 2. Decode base64 header
+      let clientPrincipal;
+      try {
+        const decoded = Buffer.from(principalHeader, 'base64').toString('utf8');
+        clientPrincipal = JSON.parse(decoded);
+      } catch (parseErr) {
+        return {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+          jsonBody: { error: 'Failed to decode x-ms-client-principal header.' }
+        };
+      }
+
+      const userId = clientPrincipal.userId;
+      const username = clientPrincipal.userDetails;
+
+      if (!userId || !username) {
+        return {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+          jsonBody: { error: 'Client principal missing userId or userDetails.' }
+        };
+      }
+
+      // 3. Connect to Cosmos DB instance and container 'users'
+      const db = getCosmosDatabase();
+      try {
+        await db.containers.createIfNotExists({ id: 'users', partitionKey: '/id' });
+      } catch (createErr) {
+        // Container may already exist
+      }
+      const container = db.container('users');
+
+      // 4. Query to preserve existing 'following' array if user already exists
+      let existingFollowing = [];
+      try {
+        const querySpec = {
+          query: 'SELECT * FROM c WHERE c.id = @id',
+          parameters: [{ name: '@id', value: userId }]
+        };
+        const { resources } = await container.items.query(querySpec).fetchAll();
+        if (resources && resources.length > 0 && Array.isArray(resources[0].following)) {
+          existingFollowing = resources[0].following;
+        }
+      } catch (readErr) {
+        context.error('Error checking existing user in Cosmos DB:', readErr);
+      }
+
+      // 5. Upsert user document
+      const userDoc = {
+        id: userId,
+        username: username,
+        following: existingFollowing,
+        lastLogin: new Date().toISOString()
+      };
+
+      const { resource: upsertedUser } = await container.items.upsert(userDoc);
+
+      return {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+        jsonBody: {
+          message: 'User synced successfully.',
+          user: upsertedUser
+        }
+      };
+    } catch (err) {
+      context.error('Error syncing user:', err);
+      return {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+        jsonBody: { error: err.message || 'Internal server error syncing user.' }
+      };
+    }
+  }
+});
+

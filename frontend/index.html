@@ -1160,6 +1160,7 @@
                 if (clientPrincipal && clientPrincipal.userDetails) {
                     currentUser = clientPrincipal.userDetails;
                     renderAuthenticatedUI(clientPrincipal);
+                    fetch('/api/syncUser');
                 } else {
                     currentUser = null;
                     renderUnauthenticatedUI();
