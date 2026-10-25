@@ -1663,20 +1663,12 @@
         // CRITICAL RULE: Preserve exact API_BASE
         const API_BASE = "https://func-slate-app-wijb3v.azurewebsites.net/api";
 
-        let currentUser = null; // Dynamically set from Azure SWA /.auth/me
-        let currentUserId = null; // FIX: Stores the GUID for the database
+        let currentUser = null;
+        let currentUserId = null;
         let debounceTimer;
         let selectedMovie = null;
         let currentRating = 0;
-        let isPublic = true;
         let isPublishing = false;
-
-        // Mock group members for Seen By read receipts
-        const mockViewers = [
-            { name: "Maya", color: "#ec4899", initial: "M" },
-            { name: "Alex", color: "#3b82f6", initial: "A" },
-            { name: "Sam", color: "#10b981", initial: "S" }
-        ];
 
         // -------------------------------------------------------------------------
         // Azure Static Web Apps Authentication State Management
@@ -1688,9 +1680,8 @@
 
             try {
                 const response = await fetch('/.auth/me');
-                if (!response.ok) {
-                    throw new Error(`Failed to check auth status (${response.status})`);
-                }
+                if (!response.ok) throw new Error(`Failed to check auth`);
+
                 const payload = await response.json();
                 const clientPrincipal = payload.clientPrincipal;
 
@@ -1698,21 +1689,16 @@
                     currentUser = clientPrincipal.userDetails;
                     currentUserId = clientPrincipal.userId;
                     renderAuthenticatedUI(clientPrincipal);
-                    // Encode the profile to base64 so the backend can read it
-                    const encodedPrincipal = btoa(JSON.stringify(clientPrincipal));
 
-                    fetch('https://func-slate-app-wijb3v.azurewebsites.net/api/syncUser', {
-                        headers: {
-                            'x-ms-client-principal': encodedPrincipal
-                        }
+                    const encodedPrincipal = btoa(JSON.stringify(clientPrincipal));
+                    fetch(API_BASE + '/syncUser', {
+                        headers: { 'x-ms-client-principal': encodedPrincipal }
                     });
                 } else {
                     currentUser = null;
                     renderUnauthenticatedUI();
                 }
             } catch (err) {
-                // Outside Azure SWA environment (e.g. local dev without SWA CLI emulator)
-                console.warn("Could not query /.auth/me. Defaulting to unauthenticated:", err);
                 currentUser = null;
                 renderUnauthenticatedUI();
             }
@@ -1723,23 +1709,16 @@
             const loggerCard = document.getElementById('loggerCard');
             const loginPromptCard = document.getElementById('loginPromptCard');
 
-            // Render GitHub & X login buttons in header
             authContainer.innerHTML = `
-                <a href="/.auth/login/github" class="auth-login-btn" title="Login with GitHub">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
-                    </svg>
+                <a href="/.auth/login/github" class="auth-login-btn">
+                    <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
                     <span>Login with GitHub</span>
                 </a>
-                <a href="/.auth/login/twitter" class="auth-login-btn" title="Login with X">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                    </svg>
+                <a href="/.auth/login/twitter" class="auth-login-btn">
+                    <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                     <span>Login with X</span>
                 </a>
             `;
-
-            // Completely hide logger card & display message
             loggerCard.style.display = 'none';
             loginPromptCard.style.display = 'flex';
         }
@@ -1747,25 +1726,19 @@
         function renderAuthenticatedUI(clientPrincipal) {
             document.getElementById('friendSearchBar').style.display = 'flex';
             document.getElementById('mainNavTabs').style.display = 'flex';
-            const authContainer = document.getElementById('authContainer');
-            const loggerCard = document.getElementById('loggerCard');
-            const loginPromptCard = document.getElementById('loginPromptCard');
 
             const username = clientPrincipal.userDetails || "User";
             const initial = username.charAt(0).toUpperCase();
 
-            // Populate authContainer with real userDetails and logout link
-            authContainer.innerHTML = `
+            document.getElementById('authContainer').innerHTML = `
                 <div class="auth-user-pill">
                     <div class="auth-avatar">${escapeHtml(initial)}</div>
                     <span>${escapeHtml(username)}</span>
                     <a href="/.auth/logout" class="auth-logout-link" title="Logout">Logout</a>
                 </div>
             `;
-
-            // Reveal logger card and hide guest prompt
-            loggerCard.style.display = 'block';
-            loginPromptCard.style.display = 'none';
+            document.getElementById('loggerCard').style.display = 'block';
+            document.getElementById('loginPromptCard').style.display = 'none';
         }
 
         // -------------------------------------------------------------------------
@@ -1779,8 +1752,7 @@
         }
 
         function clearSearchInput() {
-            const input = document.getElementById('movieSearch');
-            input.value = '';
+            document.getElementById('movieSearch').value = '';
             document.getElementById('clearSearchBtn').style.display = 'none';
             document.getElementById('dropdown').style.display = 'none';
             document.getElementById('status').innerText = '';
@@ -1816,9 +1788,7 @@
 
                 results.slice(0, 6).forEach(film => {
                     const year = film.release_date ? film.release_date.split('-')[0] : 'Unknown';
-                    const thumbUrl = film.poster_path
-                        ? `https://image.tmdb.org/t/p/w92${film.poster_path}`
-                        : 'https://via.placeholder.com/92x138/1f1f1f/777777?text=No+Poster';
+                    const thumbUrl = film.poster_path ? `https://image.tmdb.org/t/p/w92${film.poster_path}` : 'https://via.placeholder.com/92x138/1f1f1f/777777?text=No+Poster';
 
                     const item = document.createElement('div');
                     item.className = 'dropdown-item';
@@ -1844,7 +1814,6 @@
         }
 
         // -------------------------------------------------------------------------
-        // -------------------------------------------------------------------------
         // Lock Selection in Unified Input Module
         // -------------------------------------------------------------------------
         function lockInMovieSelection(film, year, thumbUrl) {
@@ -1858,11 +1827,15 @@
             document.getElementById('selectedYear').innerText = `Released ${year}`;
             document.getElementById('selectedPosterThumb').src = thumbUrl;
 
-            // Reset inputs & set datepicker to today
+            // Reset inputs & datepicker
             document.getElementById('logReviewText').value = '';
             document.getElementById('logPrivateNote').value = '';
             document.getElementById('logDatepicker').value = new Date().toISOString().split('T')[0];
-            setRating(0);
+
+            // Reset Slider
+            document.getElementById('starSlider').value = 0;
+            document.getElementById('ratingVal').innerText = 'None';
+            currentRating = 0;
 
             document.getElementById('logModule').style.display = 'block';
         }
@@ -1873,7 +1846,11 @@
             document.getElementById('movieSearch').value = '';
             document.getElementById('clearSearchBtn').style.display = 'none';
             document.getElementById('status').innerText = '';
-            setRating(0);
+
+            // Reset Slider
+            document.getElementById('starSlider').value = 0;
+            document.getElementById('ratingVal').innerText = 'None';
+            currentRating = 0;
         }
 
         async function addToWatchlistFromLog() {
@@ -1908,42 +1885,6 @@
         }
 
         // -------------------------------------------------------------------------
-        // Star Rating Handlers
-        // -------------------------------------------------------------------------
-        function setRating(rating) {
-            if (currentRating === rating) {
-                currentRating = 0;
-            } else {
-                currentRating = rating;
-            }
-
-            const stars = document.querySelectorAll('#starPicker .star-btn');
-            stars.forEach((star, idx) => {
-                if (idx < currentRating) {
-                    star.classList.add('active');
-                } else {
-                    star.classList.remove('active');
-                }
-            });
-        }
-
-        function hoverRating(rating) {
-            const stars = document.querySelectorAll('#starPicker .star-btn');
-            stars.forEach((star, idx) => {
-                if (idx < rating) {
-                    star.classList.add('hovered');
-                } else {
-                    star.classList.remove('hovered');
-                }
-            });
-        }
-
-        function resetHoverRating() {
-            const stars = document.querySelectorAll('#starPicker .star-btn');
-            stars.forEach(star => star.classList.remove('hovered'));
-        }
-
-        // -------------------------------------------------------------------------
         // Publish & Live Optimistic Update
         // -------------------------------------------------------------------------
         async function publishLogEntry() {
@@ -1957,13 +1898,12 @@
             const now = new Date();
             const chosenTimestamp = `${watchedDate}T${now.toISOString().split('T')[1]}`;
 
-            // FIX: Send BOTH the GUID and the Username to the backend
             const payload = {
                 filmId: selectedMovie.id.toString(),
                 title: selectedMovie.title,
                 year: selectedMovie.year,
-                userId: currentUserId || "user_123", // GUID for DB queries
-                username: currentUser || "user_123", // String for UI display
+                userId: currentUserId || "user_123",
+                username: currentUser || "user_123",
                 rating: currentRating > 0 ? currentRating : null,
                 review: reviewText,
                 privateNote: privateNote,
@@ -2005,8 +1945,9 @@
                 isPublishing = false;
             }
         }
+
         // -------------------------------------------------------------------------
-        // Instagram Feed Card Generator
+        // Formatting Helpers
         // -------------------------------------------------------------------------
         function getRelativeTime(dateString) {
             if (!dateString) return "Just now";
@@ -2036,7 +1977,14 @@
             return starsHtml;
         }
 
-        / -------------------------------------------------------------------------
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.innerText = text;
+            return div.innerHTML;
+        }
+
+        // -------------------------------------------------------------------------
         // Feed Card Generator (Now with Private Notes)
         // -------------------------------------------------------------------------
         function createInstaCardElement(item) {
@@ -2055,7 +2003,6 @@
             const starsHtml = item.rating ? `<div class="insta-stars" style="color:var(--accent-gold); font-size:14px;">${item.rating} ★</div>` : '';
             const captionBody = item.review || "";
 
-            // Only show private note if you are the owner of the log
             const privateNoteHtml = (item.userId === currentUserId && item.privateNote)
                 ? `<div class="private-note-display">🔒 <b>Private:</b> ${escapeHtml(item.privateNote)}</div>`
                 : '';
@@ -2085,53 +2032,12 @@
             return card;
         }
 
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.innerText = text;
-            return div.innerHTML;
-        }
-
-        // -------------------------------------------------------------------------
-        // Local Comment Interactivity (Frontend DOM Manipulation)
-        // -------------------------------------------------------------------------
-        function toggleCommentBox(btn) {
-            const card = btn.closest('.insta-card');
-            const form = card.querySelector('.insta-comment-input-form');
-            const input = form.querySelector('.insta-comment-input');
-
-            form.classList.toggle('open');
-            if (form.classList.contains('open')) {
-                input.focus();
-            }
-        }
-
-        function handlePostComment(event, form) {
-            event.preventDefault();
-            const input = form.querySelector('.insta-comment-input');
-            const commentText = input.value.trim();
-            if (!commentText) return;
-
-            const card = form.closest('.insta-card');
-            const commentsList = card.querySelector('.insta-comments-list');
-            const author = currentUser || "user_123";
-
-            // Append new comment locally
-            const commentItem = document.createElement('div');
-            commentItem.className = 'insta-comment-item';
-            commentItem.innerHTML = `<strong>${escapeHtml(author)}</strong><span>${escapeHtml(commentText)}</span>`;
-            commentsList.appendChild(commentItem);
-
-            input.value = '';
-        }
-
         // -------------------------------------------------------------------------
         // Load Feed from Backend (/api/getFeed)
         // -------------------------------------------------------------------------
         async function loadFeed() {
             const feedList = document.getElementById('feedList');
             try {
-                // Pass auth header so the backend knows whose social graph to check
                 let headers = {};
                 const authRes = await fetch('/.auth/me').catch(() => null);
                 if (authRes && authRes.ok) {
@@ -2161,7 +2067,7 @@
         }
 
         // -------------------------------------------------------------------------
-        // Profile Viewer (Fixed Broken Posters)
+        // Profile Viewer & Follow Actions
         // -------------------------------------------------------------------------
         async function openProfile(username) {
             if (!username) return;
@@ -2172,7 +2078,7 @@
 
             const profileView = document.getElementById('profileView');
             profileView.style.display = 'block';
-            document.getElementById('profileUsername').innerText = username;
+            document.getElementById('profileUsernameDisplay').innerText = username;
 
             const grid = document.getElementById('profileGrid');
             grid.innerHTML = '<div style="color:var(--text-muted); padding:20px;">Loading logs...</div>';
@@ -2188,14 +2094,11 @@
                 }
 
                 logs.forEach(item => {
-                    // FIX: Apply the same secure image processing to profile posters
                     let posterSrc = item.posterPath || item.thumbUrl || '';
                     if (posterSrc && !posterSrc.startsWith('http')) posterSrc = `https://image.tmdb.org/t/p/w500${posterSrc}`;
                     if (!posterSrc) posterSrc = 'https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster';
 
                     const title = item.filmTitle || item.title || "Unknown";
-
-                    // Add aspect-ratio and clickable modal to grid
                     grid.innerHTML += `<img class="grid-item" src="${posterSrc}" alt="${escapeHtml(title)}" style="cursor:pointer;" onclick="showFilmDetails('${item.filmId}', '${escapeHtml(title)}', '${posterSrc}')" onerror="this.src='https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster'">`;
                 });
             } catch (err) {
@@ -2208,13 +2111,11 @@
             if (currentUser) {
                 document.getElementById('loggerCard').style.display = 'block';
             }
-            document.getElementById('feedList').style.display = 'flex';
+            document.getElementById('feedListContainer').style.display = 'block';
         }
 
         async function executeFollowToggle(targetUserId, btnElement) {
             if (!currentUser) return alert("Log in to follow users.");
-
-            // Optimistic UI Update (change button instantly so it feels fast)
             const isFollowing = btnElement.innerText === 'Following';
             const action = isFollowing ? 'unfollow' : 'follow';
 
@@ -2222,7 +2123,6 @@
             btnElement.classList.toggle('active-following');
 
             try {
-                // Grab the secure auth token to prove identity to the backend
                 const response = await fetch('/.auth/me');
                 const payload = await response.json();
                 const encodedPrincipal = btoa(JSON.stringify(payload.clientPrincipal));
@@ -2233,37 +2133,29 @@
                         'Content-Type': 'application/json',
                         'x-ms-client-principal': encodedPrincipal
                     },
-                    body: JSON.stringify({
-                        targetUserId: targetUserId,
-                        action: action
-                    })
+                    body: JSON.stringify({ targetUserId: targetUserId, action: action })
                 });
-
                 if (!res.ok) throw new Error("Failed backend sync");
             } catch (err) {
-                console.error(err);
-                // If API fails, revert the button back to its original state
                 btnElement.innerText = isFollowing ? 'Following' : 'Follow';
                 btnElement.classList.toggle('active-following');
             }
         }
 
         // -------------------------------------------------------------------------
-        // Navigation, Watchlist, & Calendar Logic
+        // Navigation, Watchlist, Calendar & Recap
         // -------------------------------------------------------------------------
-        let currentCalendarDate = new Date(); // Defaults to today's month
+        let currentCalendarDate = new Date();
 
         function switchTab(tabName, element) {
-            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.header-tab').forEach(t => t.classList.remove('active'));
             if (element) element.classList.add('active');
 
-            // Show target, hide everything else
             document.getElementById('feedListContainer').style.display = tabName === 'feed' ? 'block' : 'none';
             document.getElementById('calendarView').style.display = tabName === 'calendar' ? 'block' : 'none';
             document.getElementById('watchlistView').style.display = tabName === 'watchlist' ? 'block' : 'none';
             document.getElementById('recapView').style.display = tabName === 'recap' ? 'block' : 'none';
 
-            // Fix: Always hide profile and logger when using tabs
             document.getElementById('profileView').style.display = 'none';
             if (document.getElementById('loggerCard')) document.getElementById('loggerCard').style.display = tabName === 'feed' ? 'block' : 'none';
 
@@ -2297,7 +2189,6 @@
                     if (poster && !poster.startsWith('http')) poster = `https://image.tmdb.org/t/p/w500${poster}`;
                     if (!poster) poster = 'https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster';
 
-                    // ADDED ONCLICK HERE
                     grid.innerHTML += `<img class="grid-item" style="cursor:pointer;" onclick="showFilmDetails('${item.filmId}', '${escapeHtml(item.title)}', '${poster}')" src="${poster}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster'">`;
                 });
             } catch (err) {
@@ -2362,7 +2253,6 @@
                         if (p && !p.startsWith('http')) p = `https://image.tmdb.org/t/p/w500${p}`;
                         if (!p) p = 'https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster';
 
-                        // ADDED ONCLICK HERE
                         return `<img class="calendar-mini-poster" style="cursor:pointer;" onclick="showFilmDetails('${l.filmId}', '${escapeHtml(l.filmTitle)}', '${p}')" src="${p}" onerror="this.src='https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster'">`;
                     }).join('');
 
@@ -2380,7 +2270,7 @@
 
         async function loadRecapStatus() {
             const content = document.getElementById('recapContent');
-            const month = "2026-10"; // Hardcoded to current month for MVP
+            const month = "2026-10";
 
             try {
                 let headers = {};
@@ -2395,7 +2285,7 @@
 
                 if (data.status === 'pending') {
                     content.innerHTML = `<div style="color: var(--accent-gold); font-weight: 500;">Queue worker is processing... (Polling)</div>`;
-                    setTimeout(loadRecapStatus, 3000); // Poll every 3 seconds
+                    setTimeout(loadRecapStatus, 3000);
                 } else if (data.status === 'complete') {
                     content.innerHTML = `
                         <div style="background: var(--surface-alt); border: 1px solid var(--accent-green); padding: 20px; border-radius: 8px;">
@@ -2413,8 +2303,7 @@
 
         async function requestMonthlyRecap() {
             const btn = document.getElementById('generateRecapBtn');
-            btn.innerText = "Queueing...";
-            btn.disabled = true;
+            if (btn) { btn.innerText = "Queueing..."; btn.disabled = true; }
 
             try {
                 let headers = { 'Content-Type': 'application/json' };
@@ -2430,7 +2319,7 @@
                     body: JSON.stringify({ month: "2026-10" })
                 });
 
-                loadRecapStatus(); // Start polling
+                loadRecapStatus();
             } catch (err) {
                 alert("Failed to request recap.");
             }
@@ -2444,19 +2333,16 @@
             content.innerHTML = `<div style="text-align:center; padding: 60px; color: #879fb1;">Loading film details...</div>`;
 
             try {
-                // Call our new backend API
                 const res = await fetch(`${API_BASE}/getFilmDetails?id=${filmId}`);
                 if (!res.ok) throw new Error();
                 const data = await res.json();
 
-                // Extract Letterboxd-style data points
                 const director = data.credits?.crew?.find(c => c.job === 'Director')?.name || 'Unknown Director';
                 const cast = data.credits?.cast?.slice(0, 6).map(c => `<span class="cast-pill">${escapeHtml(c.name)}</span>`).join('') || 'No cast listed';
                 const year = data.release_date ? data.release_date.split('-')[0] : 'Unknown';
                 const poster = data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : fallbackPoster;
                 const runtime = data.runtime ? `${data.runtime} mins` : '';
 
-                // Inject the rich UI layout
                 content.innerHTML = `
                     <div class="film-detail-layout">
                         <img src="${poster}" class="film-detail-poster" onerror="this.src='${fallbackPoster}'">
@@ -2475,7 +2361,6 @@
                     </div>
                 `;
             } catch (e) {
-                // Fallback if TMDB API fails
                 content.innerHTML = `
                     <div style="text-align:center; padding: 20px;">
                         <img src="${fallbackPoster}" style="width:150px; border-radius:8px; margin-bottom:12px;">
