@@ -1102,6 +1102,89 @@
         .clickable-user:hover {
             opacity: 0.7;
         }
+
+        /* -------------------------------------------------------------------------
+           Navigation Tabs & Calendar & Watchlist UI
+        -------------------------------------------------------------------------- */
+        .nav-tabs {
+            display: flex;
+            gap: 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            padding-bottom: 2px;
+        }
+
+        .nav-tab {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s;
+            padding-bottom: 8px;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-tab.active {
+            color: var(--text-primary);
+            border-bottom-color: var(--accent-green);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .calendar-cell {
+            aspect-ratio: 1;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 4px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .calendar-date {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 2px;
+            z-index: 2;
+            position: relative;
+        }
+
+        .calendar-posters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px;
+            z-index: 1;
+        }
+
+        .calendar-mini-poster {
+            width: calc(50% - 1px);
+            aspect-ratio: 2/3;
+            object-fit: cover;
+            border-radius: 2px;
+        }
     </style>
 </head>
 
@@ -1282,8 +1365,31 @@
         </section>
 
         <!-- Instagram-Style Social Feed -->
+        <!-- Navigation Tabs (Hidden until logged in) -->
+        <div id="mainNavTabs" class="nav-tabs" style="display: none;">
+            <div class="nav-tab active" onclick="switchTab('feed', this)">Feed</div>
+            <div class="nav-tab" onclick="switchTab('calendar', this)">Calendar</div>
+            <div class="nav-tab" onclick="switchTab('watchlist', this)">Watchlist</div>
+        </div>
+
+        <!-- 1. Feed View -->
         <section id="feedList">
             <div class="empty-feed-state" id="feedLoadingState">Loading circle feed...</div>
+        </section>
+
+        <!-- 2. Calendar View -->
+        <section id="calendarView" style="display: none; width: 100%;">
+            <div class="calendar-header">
+                <button class="btn-cancel" onclick="changeMonth(-1)">&#8592; Prev</button>
+                <h3 id="calendarMonthLabel" style="font-size: 16px; font-weight: 600;">Month Year</h3>
+                <button class="btn-cancel" onclick="changeMonth(1)">Next &#8594;</button>
+            </div>
+            <div id="calendarGrid" class="calendar-grid"></div>
+        </section>
+
+        <!-- 3. Watchlist View -->
+        <section id="watchlistView" style="display: none; width: 100%;">
+            <div id="watchlistGrid" class="profile-grid"></div>
         </section>
     </main>
 
@@ -1371,6 +1477,7 @@
         }
 
         function renderAuthenticatedUI(clientPrincipal) {
+            document.getElementById('mainNavTabs').style.display = 'flex';
             const authContainer = document.getElementById('authContainer');
             const loggerCard = document.getElementById('loggerCard');
             const loginPromptCard = document.getElementById('loginPromptCard');
@@ -1943,6 +2050,124 @@
                 // If API fails, revert the button back to its original state
                 btnElement.innerText = isFollowing ? 'Following' : 'Follow';
                 btnElement.classList.toggle('active-following');
+            }
+        }
+
+        // -------------------------------------------------------------------------
+        // Navigation, Watchlist, & Calendar Logic
+        // -------------------------------------------------------------------------
+        let currentCalendarDate = new Date(); // Defaults to today's month
+
+        function switchTab(tabName, element) {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            if (element) element.classList.add('active');
+
+            document.getElementById('feedList').style.display = tabName === 'feed' ? 'flex' : 'none';
+            document.getElementById('calendarView').style.display = tabName === 'calendar' ? 'block' : 'none';
+            document.getElementById('watchlistView').style.display = tabName === 'watchlist' ? 'block' : 'none';
+
+            if (tabName === 'calendar') loadCalendar();
+            if (tabName === 'watchlist') loadWatchlist();
+        }
+
+        async function loadWatchlist() {
+            const grid = document.getElementById('watchlistGrid');
+            grid.innerHTML = '<div style="color:#a1a1aa; grid-column: span 3; text-align: center; padding: 20px;">Loading watchlist...</div>';
+
+            try {
+                let headers = {};
+                const authRes = await fetch('/.auth/me').catch(() => null);
+                if (authRes && authRes.ok) {
+                    const payload = await authRes.json();
+                    if (payload.clientPrincipal) headers['x-ms-client-principal'] = btoa(JSON.stringify(payload.clientPrincipal));
+                }
+
+                const res = await fetch(`${API_BASE}/getWatchlist`, { headers });
+                const list = await res.json();
+
+                grid.innerHTML = '';
+                if (!list || !list.length) {
+                    grid.innerHTML = '<div style="color:#a1a1aa; grid-column: span 3; text-align: center; padding: 20px;">Your watchlist is empty.</div>';
+                    return;
+                }
+                list.forEach(item => {
+                    const poster = item.posterPath || 'https://via.placeholder.com/92x138/1f1f1f/777777?text=No+Poster';
+                    grid.innerHTML += `<img class="grid-item" src="${poster}" alt="${escapeHtml(item.title)}" title="${escapeHtml(item.title)}">`;
+                });
+            } catch (err) {
+                grid.innerHTML = '<div style="color:#f87171; grid-column: span 3; text-align: center;">Error loading watchlist.</div>';
+            }
+        }
+
+        function changeMonth(offset) {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + offset);
+            loadCalendar();
+        }
+
+        async function loadCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const monthLabel = document.getElementById('calendarMonthLabel');
+
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            monthLabel.innerText = `${monthNames[month]} ${year}`;
+
+            const apiMonth = `${year}-${String(month + 1).padStart(2, '0')}`;
+            grid.innerHTML = '<div style="grid-column: span 7; text-align: center; color: var(--text-muted); padding: 20px;">Loading calendar...</div>';
+
+            try {
+                let headers = {};
+                const authRes = await fetch('/.auth/me').catch(() => null);
+                if (authRes && authRes.ok) {
+                    const payload = await authRes.json();
+                    if (payload.clientPrincipal) headers['x-ms-client-principal'] = btoa(JSON.stringify(payload.clientPrincipal));
+                }
+
+                const res = await fetch(`${API_BASE}/getCalendarLogs?month=${apiMonth}`, { headers });
+                const logs = await res.json();
+
+                // Group logs by exact day
+                const logsByDay = {};
+                if (Array.isArray(logs)) {
+                    logs.forEach(log => {
+                        const dayStr = log.createdAt.split('T')[0];
+                        if (!logsByDay[dayStr]) logsByDay[dayStr] = [];
+                        logsByDay[dayStr].push(log);
+                    });
+                }
+
+                grid.innerHTML = '';
+                const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                daysOfWeek.forEach(d => grid.innerHTML += `<div class="calendar-day-header">${d}</div>`);
+
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                // Pad empty slots before the 1st
+                for (let i = 0; i < firstDay; i++) {
+                    grid.innerHTML += `<div class="calendar-cell" style="background: transparent; border: none;"></div>`;
+                }
+
+                // Render active days
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                    const dayLogs = logsByDay[dayStr] || [];
+
+                    let postersHtml = dayLogs.slice(0, 4).map(l => {
+                        const p = l.posterPath || l.thumbUrl || 'https://via.placeholder.com/92x138/1f1f1f/777777?text=No+Poster';
+                        return `<img class="calendar-mini-poster" src="${p}" title="${escapeHtml(l.filmTitle)} by ${escapeHtml(l.ownerId || l.userId)}">`;
+                    }).join('');
+
+                    grid.innerHTML += `
+                        <div class="calendar-cell">
+                            <span class="calendar-date">${i}</span>
+                            <div class="calendar-posters">${postersHtml}</div>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                grid.innerHTML = '<div style="grid-column: span 7; text-align: center; color: #f87171; padding: 20px;">Error loading calendar.</div>';
             }
         }
 

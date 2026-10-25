@@ -517,3 +517,112 @@ app.http('getUserLogs', {
     }
   }
 });
+
+// -----------------------------------------------------------------------------
+// 8. toggleWatchlist (HTTP POST)
+// -----------------------------------------------------------------------------
+app.http('toggleWatchlist', {
+  methods: ['POST'],
+  authLevel: 'anonymous',
+  handler: async (request, context) => {
+    try {
+      const principalHeader = request.headers.get('x-ms-client-principal') || request.headers.get('X-MS-CLIENT-PRINCIPAL');
+      if (!principalHeader) return { status: 401, jsonBody: { error: 'Unauthorized' } };
+      const userId = JSON.parse(Buffer.from(principalHeader, 'base64').toString('utf8')).userId;
+
+      const body = await request.json();
+      const { filmId, title, posterPath, action } = body; // action: 'add' or 'remove'
+
+      const db = getCosmosDatabase();
+      await db.containers.createIfNotExists({ id: 'watchlist', partitionKey: '/userId' });
+      const container = db.container('watchlist');
+
+      if (action === 'add') {
+        await container.items.upsert({
+          id: `${userId}_${filmId}`,
+          userId,
+          filmId: filmId.toString(),
+          title,
+          posterPath,
+          addedAt: new Date().toISOString()
+        });
+      } else {
+        try { await container.item(`${userId}_${filmId}`, userId).delete(); } catch (e) { }
+      }
+      return { status: 200, jsonBody: { message: `Watchlist updated` } };
+    } catch (err) {
+      context.error('Watchlist toggle error:', err);
+      return { status: 500, jsonBody: { error: 'Watchlist update failed' } };
+    }
+  }
+});
+
+// -----------------------------------------------------------------------------
+// 9. getWatchlist (HTTP GET)
+// -----------------------------------------------------------------------------
+app.http('getWatchlist', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  handler: async (request, context) => {
+    try {
+      const principalHeader = request.headers.get('x-ms-client-principal') || request.headers.get('X-MS-CLIENT-PRINCIPAL');
+      if (!principalHeader) return { status: 401, jsonBody: { error: 'Unauthorized' } };
+      const userId = JSON.parse(Buffer.from(principalHeader, 'base64').toString('utf8')).userId;
+
+      const db = getCosmosDatabase();
+      try {
+        await db.containers.createIfNotExists({ id: 'watchlist', partitionKey: '/userId' });
+      } catch (e) { }
+
+      const { resources } = await db.container('watchlist').items.query({
+        query: 'SELECT * FROM c WHERE c.userId = @uid ORDER BY c.addedAt DESC',
+        parameters: [{ name: '@uid', value: userId }]
+      }).fetchAll();
+
+      return { status: 200, headers: { 'Content-Type': 'application/json' }, jsonBody: resources };
+    } catch (err) {
+      context.error('Get watchlist error:', err);
+      return { status: 500, jsonBody: { error: 'Failed to load watchlist' } };
+    }
+  }
+});
+
+// -----------------------------------------------------------------------------
+// 10. getCalendarLogs (HTTP GET)
+// -----------------------------------------------------------------------------
+app.http('getCalendarLogs', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  handler: async (request, context) => {
+    try {
+      const monthPrefix = request.query.get('month'); // Expected format: "YYYY-MM"
+      if (!monthPrefix) return { status: 400, jsonBody: { error: 'Month prefix required (YYYY-MM)' } };
+
+      const principalHeader = request.headers.get('x-ms-client-principal') || request.headers.get('X-MS-CLIENT-PRINCIPAL');
+      if (!principalHeader) return { status: 401, jsonBody: { error: 'Unauthorized' } };
+      const userId = JSON.parse(Buffer.from(principalHeader, 'base64').toString('utf8')).userId;
+
+      const db = getCosmosDatabase();
+
+      // Get the social graph (you + friends)
+      let followingIds = [userId];
+      try {
+        const { resource: userProfile } = await db.container('users').item(userId, userId).read();
+        if (userProfile && Array.isArray(userProfile.following)) followingIds.push(...userProfile.following);
+      } catch (e) { }
+
+      const quotedIds = followingIds.map(id => `'${id}'`).join(',');
+
+      // Query logs that start with the target month (e.g., "2026-10")
+      const { resources: logs } = await db.container('logs').items.query({
+        query: `SELECT * FROM c WHERE c.userId IN (${quotedIds}) AND STARTSWITH(c.loggedAt, @month) ORDER BY c.loggedAt ASC`,
+        parameters: [{ name: '@month', value: monthPrefix }]
+      }).fetchAll();
+
+      return { status: 200, headers: { 'Content-Type': 'application/json' }, jsonBody: logs };
+    } catch (err) {
+      context.error('Calendar error:', err);
+      return { status: 500, jsonBody: { error: 'Failed to load calendar logs' } };
+    }
+  }
+});
