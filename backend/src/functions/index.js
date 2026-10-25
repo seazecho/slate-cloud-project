@@ -391,3 +391,65 @@ app.http('syncUser', {
   }
 });
 
+// -----------------------------------------------------------------------------
+// 6. toggleFollow (HTTP POST)
+// -----------------------------------------------------------------------------
+app.http('toggleFollow', {
+  methods: ['POST'],
+  authLevel: 'anonymous',
+  handler: async (request, context) => {
+    try {
+      // 1. Authenticate the request
+      const principalHeader = request.headers.get('x-ms-client-principal') || request.headers.get('X-MS-CLIENT-PRINCIPAL');
+      if (!principalHeader) {
+        return { status: 401, jsonBody: { error: 'Unauthorized. Missing auth header.' } };
+      }
+
+      const decoded = Buffer.from(principalHeader, 'base64').toString('utf8');
+      const clientPrincipal = JSON.parse(decoded);
+      const currentUserId = clientPrincipal.userId;
+
+      // 2. Parse the target user and action from the frontend
+      const body = await request.json();
+      const targetUserId = body.targetUserId;
+      const action = body.action; // Expects 'follow' or 'unfollow'
+
+      if (!targetUserId || !action) {
+        return { status: 400, jsonBody: { error: 'Missing targetUserId or action in request body.' } };
+      }
+
+      // 3. Fetch current user from Cosmos DB
+      const db = getCosmosDatabase();
+      const container = db.container('users');
+
+      const { resource: userProfile } = await container.item(currentUserId, currentUserId).read();
+      if (!userProfile) {
+        return { status: 404, jsonBody: { error: 'Your user profile was not found in the database.' } };
+      }
+
+      // 4. Modify the following array
+      let following = userProfile.following || [];
+      if (action === 'follow' && !following.includes(targetUserId)) {
+        following.push(targetUserId);
+      } else if (action === 'unfollow') {
+        following = following.filter(id => id !== targetUserId);
+      }
+
+      // 5. Save the updated profile back to the database
+      userProfile.following = following;
+      const { resource: updatedUser } = await container.items.upsert(userProfile);
+
+      return {
+        status: 200,
+        jsonBody: {
+          message: `Successfully executed ${action}.`,
+          following: updatedUser.following
+        }
+      };
+    } catch (err) {
+      context.error('Error in toggleFollow:', err);
+      return { status: 500, jsonBody: { error: 'Internal server error while updating social graph.' } };
+    }
+  }
+});
+
