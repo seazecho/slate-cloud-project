@@ -1088,7 +1088,7 @@
                 <!-- Selected Movie Banner -->
                 <div class="selected-movie-header">
                     <img id="selectedPosterThumb" class="selected-poster-thumb" src="" alt="Poster"
-                        onerror="this.onerror=null; this.src='[https://via.placeholder.com/777777?text=No+Poster](https://via.placeholder.com/777777?text=No+Poster)';">
+                        onerror="this.onerror=null; this.src='https://via.placeholder.com/777777?text=No+Poster';">
                     <div class="selected-details">
                         <div id="selectedTitle" class="selected-title"></div>
                         <div id="selectedYear" class="selected-year"></div>
@@ -1307,7 +1307,7 @@
                     item.onclick = () => lockInMovieSelection(film, year, thumbUrl);
 
                     item.innerHTML = `
-                        <img class="dropdown-item-poster" src="${thumbUrl}" alt="Poster" onerror="this.src='https://via.placeholder.com/92x138/1f1f1f/777777?text=No+Poster'">
+                        <img class="dropdown-item-poster" src="${thumbUrl}" alt="Poster" onerror="this.onerror=null; this.src='https://via.placeholder.com/92x138/1f1f1f/777777?text=No+Poster';">
                         <div class="dropdown-item-info">
                             <span class="dropdown-item-title">${escapeHtml(film.title)}</span>
                             <span class="dropdown-item-year">${year}</span>
