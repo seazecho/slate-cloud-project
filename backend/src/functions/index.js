@@ -626,3 +626,121 @@ app.http('getCalendarLogs', {
     }
   }
 });
+
+// -----------------------------------------------------------------------------
+// 11. requestRecap (HTTP POST -> Pushes to Storage Queue)
+// -----------------------------------------------------------------------------
+const azFunc = require('@azure/functions');
+const recapQueueOutput = azFunc.output.storageQueue({
+  queueName: 'recap-requests',
+  connection: 'AzureWebJobsStorage'
+});
+
+app.http('requestRecap', {
+  methods: ['POST'],
+  authLevel: 'anonymous',
+  extraOutputs: [recapQueueOutput],
+  handler: async (request, context) => {
+    try {
+      const principalHeader = request.headers.get('x-ms-client-principal') || request.headers.get('X-MS-CLIENT-PRINCIPAL');
+      if (!principalHeader) return { status: 401, jsonBody: { error: 'Unauthorized' } };
+      const userId = JSON.parse(Buffer.from(principalHeader, 'base64').toString('utf8')).userId;
+
+      const body = await request.json();
+      const month = body.month; // e.g., '2026-10'
+
+      const db = getCosmosDatabase();
+      await db.containers.createIfNotExists({ id: 'recaps', partitionKey: '/userId' });
+      const container = db.container('recaps');
+
+      // 1. Mark as pending in the database
+      await container.items.upsert({ id: `${userId}_${month}`, userId, month, status: 'pending' });
+
+      // 2. Drop the heavy lifting request onto the Azure Storage Queue
+      context.extraOutputs.set(recapQueueOutput, { userId, month });
+
+      return { status: 202, jsonBody: { message: 'Recap requested and queued.' } };
+    } catch (err) {
+      context.error(err);
+      return { status: 500, jsonBody: { error: 'Failed to queue recap' } };
+    }
+  }
+});
+
+// -----------------------------------------------------------------------------
+// 12. processRecapWorker (QUEUE TRIGGER -> Heavy Compute Offload)
+// -----------------------------------------------------------------------------
+app.storageQueue('processRecapWorker', {
+  queueName: 'recap-requests',
+  connection: 'AzureWebJobsStorage',
+  handler: async (queueItem, context) => {
+    context.log('Queue trigger fired for recap:', queueItem);
+    const { userId, month } = queueItem;
+
+    try {
+      const db = getCosmosDatabase();
+
+      // Read logs for that specific month
+      const { resources: logs } = await db.container('logs').items.query({
+        query: `SELECT * FROM c WHERE c.userId = @uid AND STARTSWITH(c.loggedAt, @month)`,
+        parameters: [{ name: '@uid', value: userId }, { name: '@month', value: month }]
+      }).fetchAll();
+
+      // Calculate heavy statistics
+      const totalFilms = logs.length;
+      let highestRatedFilm = "None";
+      let maxRating = 0;
+
+      logs.forEach(log => {
+        if (log.rating && log.rating > maxRating) {
+          maxRating = log.rating;
+          highestRatedFilm = log.filmTitle;
+        }
+      });
+
+      // Simulate heavy processing time (2 seconds) to prove the frontend doesn't block
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Save final aggregated JSON result to Cosmos DB
+      const recapData = {
+        id: `${userId}_${month}`,
+        userId,
+        month,
+        status: 'complete',
+        stats: { totalFilms, highestRatedFilm, maxRating },
+        generatedAt: new Date().toISOString()
+      };
+
+      await db.container('recaps').items.upsert(recapData);
+      context.log(`Successfully generated recap for ${userId} - ${month}`);
+    } catch (err) {
+      context.error('Worker failed to generate recap:', err);
+    }
+  }
+});
+
+// -----------------------------------------------------------------------------
+// 13. getRecap (HTTP GET -> Check Status)
+// -----------------------------------------------------------------------------
+app.http('getRecap', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  handler: async (request, context) => {
+    try {
+      const principalHeader = request.headers.get('x-ms-client-principal') || request.headers.get('X-MS-CLIENT-PRINCIPAL');
+      if (!principalHeader) return { status: 401 };
+      const userId = JSON.parse(Buffer.from(principalHeader, 'base64').toString('utf8')).userId;
+      const month = request.query.get('month');
+
+      const db = getCosmosDatabase();
+      try {
+        const { resource } = await db.container('recaps').item(`${userId}_${month}`, userId).read();
+        return { status: 200, jsonBody: resource || { status: 'none' } };
+      } catch (e) {
+        return { status: 200, jsonBody: { status: 'none' } };
+      }
+    } catch (err) {
+      return { status: 500, jsonBody: { error: 'Failed to fetch recap status' } };
+    }
+  }
+});
