@@ -310,10 +310,11 @@ app.http('getFeed', {
       const { resources: directLogs } = await logsContainer.items.query(querySpec).fetchAll();
 
       // 4. Map the raw logs into the exact format the frontend expects
+      // 4. Map the raw logs into the exact format the frontend expects
       const formattedFeed = directLogs.map(log => ({
         id: log.id,
-        ownerId: log.userId,
-        userId: log.userId,
+        ownerId: log.username || log.userId, // FIX: Use the clean username
+        userId: log.username || log.userId,  // FIX: Use the clean username
         filmTitle: log.filmTitle,
         year: log.year,
         posterPath: log.posterPath || log.thumbUrl,
@@ -616,11 +617,14 @@ app.http('getCalendarLogs', {
 
       const quotedIds = followingIds.map(id => `'${id}'`).join(',');
 
-      // Query logs that start with the target month (e.g., "2026-10")
+      // Query logs that start with the target month (Removed ORDER BY to prevent Cosmos DB crash)
       const { resources: logs } = await db.container('logs').items.query({
-        query: `SELECT * FROM c WHERE c.userId IN (${quotedIds}) AND STARTSWITH(c.loggedAt, @month) ORDER BY c.loggedAt ASC`,
+        query: `SELECT * FROM c WHERE c.userId IN (${quotedIds}) AND STARTSWITH(c.loggedAt, @month)`,
         parameters: [{ name: '@month', value: monthPrefix }]
       }).fetchAll();
+
+      // Sort in memory instead
+      logs.sort((a, b) => new Date(a.loggedAt) - new Date(b.loggedAt));
 
       return { status: 200, headers: { 'Content-Type': 'application/json' }, jsonBody: logs };
     } catch (err) {
@@ -744,6 +748,33 @@ app.http('getRecap', {
       }
     } catch (err) {
       return { status: 500, jsonBody: { error: 'Failed to fetch recap status' } };
+    }
+  }
+});
+
+// -----------------------------------------------------------------------------
+// 14. getFilmDetails (HTTP GET) - TMDB Deep Fetch
+// -----------------------------------------------------------------------------
+app.http('getFilmDetails', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  handler: async (request, context) => {
+    try {
+      const filmId = request.query.get('id');
+      if (!filmId) return { status: 400, jsonBody: { error: "Film ID required" } };
+
+      const apiKey = process.env.TMDB_API_KEY;
+      // Fetch movie details AND credits (cast/crew) in one single request
+      const url = `https://api.themoviedb.org/3/movie/${filmId}?api_key=${apiKey}&append_to_response=credits`;
+
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("TMDB fetch failed");
+
+      const data = await response.json();
+      return { status: 200, headers: { 'Content-Type': 'application/json' }, jsonBody: data };
+    } catch (err) {
+      context.error(err);
+      return { status: 500, jsonBody: { error: 'Failed to fetch film details' } };
     }
   }
 });
