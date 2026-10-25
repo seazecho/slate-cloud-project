@@ -1189,7 +1189,14 @@
                 if (clientPrincipal && clientPrincipal.userDetails) {
                     currentUser = clientPrincipal.userDetails;
                     renderAuthenticatedUI(clientPrincipal);
-                    fetch('https://func-slate-app-wijb3v.azurewebsites.net/api/syncUser');
+                    // Encode the profile to base64 so the backend can read it
+                    const encodedPrincipal = btoa(JSON.stringify(clientPrincipal));
+
+                    fetch('https://func-slate-app-wijb3v.azurewebsites.net/api/syncUser', {
+                        headers: {
+                            'x-ms-client-principal': encodedPrincipal
+                        }
+                    });
                 } else {
                     currentUser = null;
                     renderUnauthenticatedUI();
