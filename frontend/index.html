@@ -29,6 +29,19 @@
             --shadow-card: 0 6px 20px rgba(0, 0, 0, 0.5);
         }
 
+        body.light-theme {
+            --bg-color: #f0f2f5;
+            --surface-color: #ffffff;
+            --surface-alt: #f9fafb;
+            --surface-hover: #f3f4f6;
+            --border-color: #d1d5db;
+            --border-focus: #9ca3af;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --accent-green: #16a34a;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -50,13 +63,22 @@
         /* -------------------------------------------------------------------------
            Header & Top Branding
         -------------------------------------------------------------------------- */
+        .feed-container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin: 0 auto;
+        }
+
         .app-header {
             width: 100%;
-            max-width: 480px;
+            max-width: 1200px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 22px;
+            margin: 0 auto 22px auto;
             padding: 0 4px;
             gap: 12px;
             flex-wrap: wrap;
@@ -94,7 +116,7 @@
             letter-spacing: 3px;
         }
 
-        /* Authentication Container */
+        /* Auth UI */
         #authContainer {
             display: flex;
             align-items: center;
@@ -169,104 +191,6 @@
             color: #f87171;
         }
 
-        /* -------------------------------------------------------------------------
-           Feed Layout Container (FULL WIDTH DESKTOP)
-        -------------------------------------------------------------------------- */
-        .feed-container {
-            width: 100%;
-            max-width: 1200px;
-            /* Expanded for full PC screen */
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            margin: 0 auto;
-        }
-
-        .app-header {
-            width: 100%;
-            max-width: 1200px;
-            /* Expanded for full PC screen */
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin: 0 auto 22px auto;
-            padding: 0 4px;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        /* Instagram-Style Feed Posts -> Converted to Responsive Grid */
-        #feedList {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 24px;
-            width: 100%;
-        }
-
-        /* Enforce Perfect Poster Proportions */
-        .insta-poster-img {
-            width: auto;
-            max-width: 100%;
-            height: auto;
-            max-height: 520px;
-            object-fit: contain !important;
-            /* NEVER CROP */
-            display: block;
-            border-radius: 6px;
-            margin: 0 auto;
-            /* Center it in the black box */
-        }
-
-        .grid-item {
-            width: 100%;
-            height: auto;
-            aspect-ratio: 2 / 3 !important;
-            object-fit: contain !important;
-            /* NEVER CROP */
-            border-radius: 6px;
-            background: #141414;
-            /* Black letterboxing if needed */
-        }
-
-        /* Private Note Box */
-        .private-note-display {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px dashed #555;
-            padding: 8px 12px;
-            margin-top: 10px;
-            border-radius: 6px;
-            font-size: 13px;
-            color: #a1a1aa;
-            display: inline-block;
-        }
-
-        /* Half-Star Slider */
-        .rating-slider {
-            -webkit-appearance: none;
-            width: 120px;
-            height: 6px;
-            background: #2c3440;
-            border-radius: 4px;
-            outline: none;
-        }
-
-        .rating-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: var(--accent-gold);
-            cursor: pointer;
-        }
-
-        .rating-display-text {
-            color: var(--accent-gold);
-            font-weight: 700;
-            width: 40px;
-        }
-
-        /* Unauthenticated Prompt */
         .login-prompt-card {
             background: var(--surface-color);
             border: 1px dashed var(--border-color);
@@ -282,465 +206,64 @@
             gap: 12px;
         }
 
-        .login-prompt-text {
-            color: var(--text-muted);
-            font-size: 13px;
-        }
-
-        .login-prompt-btns {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* -------------------------------------------------------------------------
-           Unified Logging Module (Shown only when logged in)
-        -------------------------------------------------------------------------- */
-        .logger-card {
-            background: var(--surface-color);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 20px;
-            box-shadow: var(--shadow-card);
-            position: relative;
-        }
-
-        .logger-title-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 14px;
-        }
-
-        .logger-title {
-            font-size: 13px;
-            font-weight: 600;
-            letter-spacing: 1.2px;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .logger-title-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--accent-green);
-        }
-
-        .search-box-wrapper {
-            position: relative;
-            width: 100%;
-        }
-
-        .search-input-container {
-            display: flex;
-            align-items: center;
-            background: var(--surface-alt);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 0 14px;
-            transition: all 0.2s ease;
-        }
-
-        .search-input-container:focus-within {
-            border-color: var(--accent-green);
-            box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.15);
-        }
-
-        .search-icon {
-            color: var(--text-muted);
-            width: 17px;
-            height: 17px;
-            margin-right: 10px;
-            flex-shrink: 0;
-        }
-
-        .search-input {
-            width: 100%;
+        /* Theme Toggle Button */
+        .btn-theme {
             background: transparent;
-            border: none;
-            outline: none;
-            padding: 12px 0;
-            color: var(--text-primary);
-            font-size: 14px;
-            font-family: inherit;
-        }
-
-        .search-input::placeholder {
+            border: 1px solid var(--border-color);
             color: var(--text-muted);
-        }
-
-        .search-clear-btn {
-            background: none;
-            border: none;
-            color: var(--text-muted);
+            padding: 6px;
+            border-radius: 50%;
             cursor: pointer;
-            padding: 4px;
-            display: none;
+            display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 50%;
-            font-size: 12px;
+            transition: all 0.2s;
         }
 
-        .search-clear-btn:hover {
+        .btn-theme:hover {
             color: var(--text-primary);
-        }
-
-        /* TMDB Dropdown */
-        .dropdown {
-            position: absolute;
-            top: calc(100% + 6px);
-            left: 0;
-            right: 0;
-            background: #252525;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.7);
-            max-height: 320px;
-            overflow-y: auto;
-            z-index: 50;
-            display: none;
-        }
-
-        .dropdown-item {
-            display: flex;
-            align-items: center;
-            padding: 10px 12px;
-            cursor: pointer;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            transition: background 0.15s ease;
-        }
-
-        .dropdown-item:last-child {
-            border-bottom: none;
-        }
-
-        .dropdown-item:hover {
             background: var(--surface-hover);
         }
 
-        .dropdown-item-poster {
-            width: 36px;
-            height: 52px;
-            object-fit: cover;
-            border-radius: 4px;
-            margin-right: 12px;
-            background: #141414;
-            flex-shrink: 0;
-        }
-
-        .dropdown-item-info {
+        /* Navigation Tabs */
+        .header-tabs {
             display: flex;
-            flex-direction: column;
-            gap: 2px;
-            flex-grow: 1;
-            overflow: hidden;
-        }
-
-        .dropdown-item-title {
-            font-size: 13.5px;
-            font-weight: 500;
-            color: var(--text-primary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .dropdown-item-year {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .dropdown-item-select-hint {
-            font-size: 12px;
-            color: var(--accent-green);
-            opacity: 0;
-            transition: opacity 0.15s ease;
-            font-weight: 500;
-        }
-
-        .dropdown-item:hover .dropdown-item-select-hint {
-            opacity: 1;
-        }
-
-        /* Unified Log Module */
-        .log-module {
-            display: none;
-            margin-top: 18px;
-            padding-top: 18px;
-            border-top: 1px solid var(--border-color);
-            animation: slideDownFade 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes slideDownFade {
-            from {
-                opacity: 0;
-                transform: translateY(-6px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .selected-movie-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: var(--surface-alt);
-            padding: 10px 12px;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-color);
-            margin-bottom: 16px;
-        }
-
-        .selected-poster-thumb {
-            width: 44px;
-            height: 66px;
-            object-fit: cover;
-            border-radius: 4px;
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
-            background: #141414;
-            flex-shrink: 0;
-        }
-
-        .selected-details {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
+            gap: 20px;
+            margin-left: 20px;
             flex-grow: 1;
         }
 
-        .selected-title {
-            font-size: 14.5px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .selected-year {
-            font-size: 12.5px;
+        .header-tab {
             color: var(--text-muted);
-        }
-
-        .change-selection-btn {
-            background: transparent;
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            font-size: 12px;
-            padding: 5px 9px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-
-        .change-selection-btn:hover {
-            color: var(--text-primary);
-            border-color: var(--border-focus);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        /* 5-Star Rating Row */
-        .star-rating-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 14px;
-            padding: 0 2px;
-        }
-
-        .rating-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
-
-        .star-picker {
-            display: inline-flex;
-            gap: 4px;
-            background: var(--surface-alt);
-            padding: 6px 10px;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-color);
-        }
-
-        .star-btn {
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            font-size: 20px;
-            line-height: 1;
-            color: #4b5563;
-            transition: transform 0.15s ease, color 0.15s ease;
-            user-select: none;
-        }
-
-        .star-btn:hover {
-            transform: scale(1.2);
-        }
-
-        .star-btn.active,
-        .star-btn.hovered {
-            color: var(--accent-gold);
-            text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
-        }
-
-        /* Review / Note Textarea */
-        .log-textarea {
-            width: 100%;
-            background: var(--surface-alt);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 12px 14px;
-            color: var(--text-primary);
-            font-size: 13.5px;
-            font-family: inherit;
-            resize: vertical;
-            min-height: 75px;
-            outline: none;
-            margin-bottom: 14px;
-            transition: border-color 0.2s ease;
-            line-height: 1.5;
-        }
-
-        .log-textarea:focus {
-            border-color: var(--border-focus);
-        }
-
-        .log-textarea::placeholder {
-            color: var(--text-muted);
-        }
-
-        /* Bottom Row: Toggle Switch + Actions */
-        .module-bottom-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        }
-
-        /* Privacy Toggle Switch */
-        .privacy-toggle-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .switch-track {
-            width: 38px;
-            height: 22px;
-            background: #374151;
-            border-radius: 999px;
-            position: relative;
-            transition: background 0.2s ease;
-        }
-
-        .switch-track.active {
-            background: var(--accent-green);
-        }
-
-        .switch-thumb {
-            width: 18px;
-            height: 18px;
-            background: #ffffff;
-            border-radius: 50%;
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            transition: transform 0.2s ease;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-        }
-
-        .switch-track.active .switch-thumb {
-            transform: translateX(16px);
-        }
-
-        .privacy-label-text {
-            font-size: 12.5px;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-
-        .module-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-cancel {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            padding: 8px 12px;
-            border-radius: var(--radius-md);
-            transition: color 0.15s ease;
-        }
-
-        .btn-cancel:hover {
-            color: var(--text-primary);
-        }
-
-        .btn-publish {
-            background: var(--accent-green);
-            color: #052e16;
-            border: none;
-            border-radius: var(--radius-md);
-            padding: 8px 18px;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 8px rgba(74, 222, 128, 0.25);
+            transition: color 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding-bottom: 4px;
+            border-bottom: 2px solid transparent;
         }
 
-        .btn-publish:hover {
-            background: var(--accent-green-hover);
-            color: #000;
-            transform: translateY(-1px);
+        .header-tab:hover {
+            color: var(--text-primary);
         }
 
-        .btn-publish:active {
-            transform: scale(0.98);
-        }
-
-        .btn-publish:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .status-msg {
-            margin-top: 10px;
-            font-size: 12.5px;
-            min-height: 16px;
-            color: var(--text-muted);
-            text-align: center;
+        .header-tab.active {
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--accent-green);
         }
 
         /* -------------------------------------------------------------------------
-           Instagram-Style Feed Posts
+           Side-by-Side Desktop Feed Layout
         -------------------------------------------------------------------------- */
         #feedList {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 24px;
+            width: 100%;
         }
 
-        /* -------------------------------------------------------------------------
-           Side-by-Side Desktop Feed Layout (Instagram Style)
-        -------------------------------------------------------------------------- */
         .insta-card {
             display: flex;
             flex-direction: row;
@@ -749,12 +272,8 @@
             border-radius: var(--radius-lg);
             overflow: hidden;
             box-shadow: var(--shadow-card);
-            height: 550px;
-            /* Fixed height for the side-by-side view */
+            height: 500px;
             width: 100%;
-        }
-
-        .insta-card.optimistic-entry {
             animation: instaSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -770,12 +289,35 @@
             }
         }
 
-
-
-        .insta-user-meta {
+        .insta-media-left {
+            width: 50%;
+            background: #000;
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: center;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .insta-media-left img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain !important;
+            /* NEVER CROP */
+        }
+
+        .insta-content-right {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            background: var(--surface-color);
+        }
+
+        .insta-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .insta-avatar {
@@ -792,96 +334,19 @@
             color: var(--accent-green);
             flex-shrink: 0;
             text-transform: uppercase;
+            cursor: pointer;
         }
 
-        .insta-user-info {
+        .insta-header-text {
             display: flex;
-            align-items: baseline;
-            gap: 6px;
+            flex-direction: column;
         }
 
         .insta-username {
             font-size: 13.5px;
             font-weight: 600;
             color: var(--text-primary);
-        }
-
-        .insta-dot {
-            color: var(--text-muted);
-            font-size: 12px;
-        }
-
-        .insta-time {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .insta-options-btn {
-            background: none;
-            border: none;
-            color: var(--text-muted);
             cursor: pointer;
-            padding: 4px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-        }
-
-        .insta-options-btn:hover {
-            color: var(--text-primary);
-        }
-
-        /* 2. Media: Full-Width Prominent Poster */
-        .insta-media-container {
-            width: 100%;
-            background: #0d0d0d;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-            border-top: 1px solid rgba(255, 255, 255, 0.04);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-        }
-
-        /* LEFT SIDE: Uncropped Poster */
-        .insta-media-left {
-            width: 55%;
-            background: #000;
-            /* Letterboxing for uncropped images */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-right: 1px solid var(--border-color);
-        }
-
-        .insta-media-left img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain !important;
-            /* NEVER CROP */
-        }
-
-        /* RIGHT SIDE: Details, Reviews, Comments */
-        .insta-content-right {
-            width: 45%;
-            display: flex;
-            flex-direction: column;
-            background: var(--surface-color);
-        }
-
-        /* Right Side Header (User & Dates) */
-        .insta-header {
-            padding: 16px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .insta-header-text {
-            display: flex;
-            flex-direction: column;
         }
 
         .insta-date-meta {
@@ -890,7 +355,6 @@
             margin-top: 2px;
         }
 
-        /* Right Side Body (Scrollable Review & Stars) */
         .insta-body {
             padding: 16px;
             flex-grow: 1;
@@ -905,266 +369,156 @@
             text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
         }
 
-        /* Right Side Footer (Comments Area) */
         .insta-footer {
             padding: 16px;
             border-top: 1px solid var(--border-color);
             background: var(--surface-alt);
         }
 
-        .insta-poster-img {
-            width: 100%;
-            max-height: 520px;
-            object-fit: cover;
-            display: block;
-            transition: opacity 0.2s ease;
+        .private-note-display {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px dashed var(--border-focus);
+            padding: 8px 12px;
+            margin-top: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-muted);
+            display: inline-block;
         }
 
-        .insta-poster-fallback {
-            width: 100%;
-            height: 300px;
-            background: linear-gradient(135deg, #1f1f23, #121214);
+        /* -------------------------------------------------------------------------
+           Calendar Grid
+        -------------------------------------------------------------------------- */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .calendar-cell {
+            aspect-ratio: 1;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
             display: flex;
             flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+
+        .calendar-cell:hover {
+            border-color: var(--accent-green);
+        }
+
+        .calendar-cell.empty-day {
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            color: var(--text-muted);
-            padding: 20px;
-            text-align: center;
         }
 
-        .insta-poster-fallback svg {
-            width: 36px;
-            height: 36px;
-            color: var(--accent-green);
-        }
-
-        .insta-poster-fallback span {
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-
-        /* 3. Action Bar: Seen By + Comment Icon */
-        .insta-action-bar {
-            padding: 10px 16px 6px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .insta-seen-by {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-
-        .insta-eye-icon {
-            width: 16px;
-            height: 16px;
-            color: var(--text-muted);
-            flex-shrink: 0;
-        }
-
-        .insta-avatar-stack {
-            display: flex;
-            align-items: center;
-        }
-
-        .insta-micro-avatar {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            border: 1.5px solid var(--surface-color);
-            margin-left: -5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 9px;
+        .calendar-cell.empty-day .calendar-date {
+            font-size: 28px;
             font-weight: 700;
-            color: #ffffff;
+            color: var(--text-muted);
+            opacity: 0.4;
+            margin: 0;
         }
 
-        .insta-micro-avatar:first-child {
-            margin-left: 0;
+        .calendar-cell.active-day {
+            padding: 6px;
         }
 
-        .insta-seen-text {
+        .calendar-cell.active-day .calendar-date {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            z-index: 2;
+        }
+
+        .calendar-posters {
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 2px;
+            flex-grow: 1;
+            z-index: 1;
+            overflow: hidden;
+            justify-content: center;
+        }
+
+        .calendar-mini-poster {
+            flex: 1;
+            max-width: 50%;
+            height: 100%;
+            aspect-ratio: 2/3;
+            object-fit: contain !important;
+            border-radius: 4px;
+            background: #141414;
+        }
+
+        /* -------------------------------------------------------------------------
+           Profile & Watchlist Grid
+        -------------------------------------------------------------------------- */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .watchlist-card {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .watchlist-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .watchlist-meta {
             font-size: 12px;
             color: var(--text-muted);
         }
 
-        .insta-comment-icon-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 5px 6px;
+        .grid-item {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 2 / 3 !important;
+            object-fit: contain !important;
             border-radius: 6px;
-            font-size: 12.5px;
-            font-weight: 500;
-            transition: color 0.15s ease, background 0.15s ease;
-            font-family: inherit;
-        }
-
-        .insta-comment-icon-btn:hover {
-            color: var(--text-primary);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .insta-comment-icon-btn svg {
-            width: 18px;
-            height: 18px;
-        }
-
-        /* 4. Caption Area */
-        .insta-caption-area {
-            padding: 0 16px 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .insta-rating-stars {
-            display: flex;
-            align-items: center;
-            gap: 2px;
-            color: var(--accent-gold);
-            font-size: 13px;
-            margin-bottom: 2px;
-        }
-
-        .insta-rating-stars .empty {
-            color: #374151;
-        }
-
-        .insta-film-title-row {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 2px;
-        }
-
-        .insta-caption-text {
-            font-size: 13.5px;
-            line-height: 1.45;
-            color: #d4d4d8;
-            word-break: break-word;
-        }
-
-        .insta-caption-username {
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-right: 6px;
-        }
-
-        /* 5. Local Interactive Comments Section */
-        .insta-comments-section {
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 10px 16px 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .insta-comments-list {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .insta-comment-item {
-            font-size: 13px;
-            line-height: 1.4;
-            color: #d1d5db;
-        }
-
-        .insta-comment-item strong {
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-right: 6px;
-        }
-
-        .insta-comment-input-form {
-            display: none;
-            align-items: center;
-            gap: 8px;
-            margin-top: 4px;
-            animation: fadeIn 0.2s ease;
-        }
-
-        .insta-comment-input-form.open {
-            display: flex;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        .insta-comment-input {
-            flex-grow: 1;
-            background: var(--surface-alt);
-            border: 1px solid var(--border-color);
-            border-radius: 999px;
-            padding: 7px 14px;
-            color: var(--text-primary);
-            font-size: 12.5px;
-            outline: none;
-            transition: border-color 0.15s ease;
-        }
-
-        .insta-comment-input:focus {
-            border-color: var(--border-focus);
-        }
-
-        .insta-comment-post-btn {
-            background: transparent;
-            border: none;
-            color: var(--accent-green);
-            font-size: 12.5px;
-            font-weight: 600;
+            background: #141414;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s;
             cursor: pointer;
-            padding: 6px 10px;
-            transition: opacity 0.15s ease;
         }
 
-        .insta-comment-post-btn:hover {
-            opacity: 0.8;
+        .grid-item:hover {
+            transform: scale(1.03);
         }
 
-        .empty-feed-state {
-            background: var(--surface-color);
-            border: 1px dashed var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 36px 20px;
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 13.5px;
-        }
-
-        /* Scrollbars */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #333333;
-            border-radius: 4px;
-        }
-
-        /* -------------------------------------------------------------------------
-           User Profile UI
-        -------------------------------------------------------------------------- */
         .profile-view {
             display: none;
             background: var(--surface-color);
@@ -1173,7 +527,7 @@
             padding: 24px;
             box-shadow: var(--shadow-card);
             margin-bottom: 20px;
-            animation: fadeIn 0.2s ease;
+            animation: instaSlideIn 0.2s ease;
         }
 
         .profile-header-top {
@@ -1247,134 +601,292 @@
             color: var(--text-primary);
         }
 
-        .clickable-user {
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .clickable-user:hover {
-            opacity: 0.7;
-        }
-
         /* -------------------------------------------------------------------------
-           Navigation Tabs & Calendar & Watchlist UI
+           Logging Module & Search
         -------------------------------------------------------------------------- */
-        .nav-tabs {
-            display: flex;
-            gap: 20px;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 20px;
-            padding-bottom: 2px;
-        }
-
-        .nav-tab {
-            color: var(--text-muted);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: color 0.2s;
-            padding-bottom: 8px;
-            border-bottom: 2px solid transparent;
-        }
-
-        .nav-tab.active {
-            color: var(--text-primary);
-            border-bottom-color: var(--accent-green);
-        }
-
-        /* -------------------------------------------------------------------------
-           Calendar: Big Numbers & Even Posters
-        -------------------------------------------------------------------------- */
-        .calendar-cell {
-            aspect-ratio: 1;
+        .logger-card {
             background: var(--surface-color);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: var(--shadow-card);
             position: relative;
-            overflow: hidden;
+            margin-bottom: 20px;
         }
 
-        /* Empty Day Layout */
-        .calendar-cell.empty-day {
-            align-items: center;
-            justify-content: center;
-        }
-
-        .calendar-cell.empty-day .calendar-date {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--text-muted);
-            opacity: 0.4;
-            margin: 0;
-        }
-
-        /* Active Day Layout */
-        .calendar-cell.active-day {
-            padding: 6px;
-        }
-
-        .calendar-cell.active-day .calendar-date {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 4px;
-        }
-
-        .calendar-posters {
+        .logger-title-row {
             display: flex;
-            gap: 4px;
-            height: 100%;
-            width: 100%;
-            justify-content: center;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
         }
 
-        .calendar-mini-poster {
-            flex: 1;
-            max-width: 50%;
-            /* Prevents more than 2 from breaking layout */
-            height: 100%;
-            object-fit: contain !important;
-            /* NEVER CROP */
+        .logger-title {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logger-title-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent-green);
+        }
+
+        .search-box-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-input-container {
+            display: flex;
+            align-items: center;
+            background: var(--surface-alt);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 0 14px;
+            transition: all 0.2s ease;
+        }
+
+        .search-input-container:focus-within {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.15);
+        }
+
+        .search-icon {
+            color: var(--text-muted);
+            width: 17px;
+            height: 17px;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .search-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            padding: 12px 0;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .search-clear-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            display: none;
+            border-radius: 50%;
+            font-size: 12px;
+        }
+
+        .dropdown {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.7);
+            max-height: 320px;
+            overflow-y: auto;
+            z-index: 50;
+            display: none;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.15s ease;
+        }
+
+        .dropdown-item:hover {
+            background: var(--surface-hover);
+        }
+
+        .dropdown-item-poster {
+            width: 36px;
+            height: 52px;
+            object-fit: cover;
             border-radius: 4px;
+            margin-right: 12px;
             background: #141414;
         }
 
-        .friend-search-bar {
+        .dropdown-item-info {
             display: flex;
-            gap: 8px;
+            flex-direction: column;
+            gap: 2px;
+            flex-grow: 1;
+        }
+
+        .dropdown-item-title {
+            font-size: 13.5px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .dropdown-item-year {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .log-module {
+            display: none;
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .selected-movie-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--surface-alt);
+            padding: 10px 12px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
             margin-bottom: 16px;
         }
 
-        .friend-search-input {
-            flex-grow: 1;
-            background: var(--surface-alt);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 10px 14px;
-            color: white;
-            outline: none;
-            font-size: 13px;
+        .selected-poster-thumb {
+            width: 44px;
+            height: 66px;
+            object-fit: cover;
+            border-radius: 4px;
+            background: #141414;
+            flex-shrink: 0;
         }
 
-        .btn-search {
+        .selected-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex-grow: 1;
+        }
+
+        .selected-title {
+            font-size: 14.5px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .selected-year {
+            font-size: 12.5px;
+            color: var(--text-muted);
+        }
+
+        .rating-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .rating-slider {
+            -webkit-appearance: none;
+            width: 120px;
+            height: 6px;
+            background: var(--surface-alt);
+            border-radius: 4px;
+            outline: none;
+            border: 1px solid var(--border-color);
+        }
+
+        .rating-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-gold);
+            cursor: pointer;
+        }
+
+        .rating-display-text {
+            color: var(--accent-gold);
+            font-weight: 700;
+            width: 40px;
+        }
+
+        .log-textarea {
+            width: 100%;
             background: var(--surface-alt);
             border: 1px solid var(--border-color);
-            color: white;
-            padding: 0 16px;
-            border-radius: 8px;
-            cursor: pointer;
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            color: var(--text-primary);
+            font-size: 13.5px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 75px;
+            outline: none;
+            margin-bottom: 14px;
+            line-height: 1.5;
+        }
+
+        .log-textarea:focus {
+            border-color: var(--border-focus);
+        }
+
+        .module-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .btn-cancel {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
             font-size: 13px;
             font-weight: 500;
-            transition: background 0.2s;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            transition: color 0.15s;
         }
 
-        .btn-search:hover {
-            background: #374151;
+        .btn-cancel:hover {
+            color: var(--text-primary);
         }
 
-        /* Rich Movie Modal styling */
+        .btn-publish {
+            background: var(--accent-green);
+            color: #052e16;
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-publish:hover {
+            background: var(--accent-green-hover);
+            transform: translateY(-1px);
+        }
+
+        /* -------------------------------------------------------------------------
+           Rich Modal
+        -------------------------------------------------------------------------- */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -1391,15 +903,15 @@
         }
 
         .modal-content {
-            background: #14181c;
+            background: var(--surface-color);
             padding: 30px;
             border-radius: 12px;
             max-width: 750px;
             width: 100%;
-            border: 1px solid #2c3440;
+            border: 1px solid var(--border-color);
             position: relative;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-            color: #99aab5;
+            color: var(--text-primary);
         }
 
         .modal-close {
@@ -1408,7 +920,7 @@
             top: 20px;
             background: transparent;
             border: none;
-            color: #879fb1;
+            color: var(--text-muted);
             width: 30px;
             height: 30px;
             cursor: pointer;
@@ -1417,7 +929,7 @@
         }
 
         .modal-close:hover {
-            color: #fff;
+            color: var(--text-primary);
         }
 
         .film-detail-layout {
@@ -1429,12 +941,9 @@
             width: 230px;
             height: auto;
             align-self: flex-start;
-            /* Stops it from stretching vertically */
             border-radius: 6px;
             border: 1px solid var(--border-color);
             object-fit: contain !important;
-            /* NEVER CROP */
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
             background: #141414;
         }
 
@@ -1446,83 +955,39 @@
 
         .film-detail-title {
             font-size: 32px;
-            color: #fff;
+            color: var(--text-primary);
             font-weight: 700;
             margin-bottom: 4px;
             font-family: ui-serif, Georgia, serif;
-            letter-spacing: -0.5px;
         }
 
         .film-detail-meta {
             font-size: 13.5px;
             margin-bottom: 16px;
-            border-bottom: 1px solid #2c3440;
+            border-bottom: 1px solid var(--border-color);
             padding-bottom: 12px;
+            color: var(--text-secondary);
         }
 
         .film-detail-synopsis {
             font-size: 14.5px;
             line-height: 1.6;
             margin-bottom: 20px;
-            color: #879fb1;
+            color: var(--text-muted);
         }
 
         .cast-pill {
             display: inline-block;
-            background: #2c3440;
-            color: #fff;
+            background: var(--surface-alt);
+            color: var(--text-primary);
             padding: 5px 10px;
             border-radius: 4px;
             font-size: 12px;
             margin: 0 6px 6px 0;
             font-weight: 500;
+            border: 1px solid var(--border-color);
         }
 
-        /* Move tabs into Header */
-        .header-tabs {
-            display: flex;
-            gap: 20px;
-            margin-left: 20px;
-            flex-grow: 1;
-        }
-
-        .header-tab {
-            color: #879fb1;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: color 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .header-tab:hover {
-            color: #fff;
-        }
-
-        .header-tab.active {
-            color: #fff;
-            border-bottom: 2px solid var(--accent-green);
-            padding-bottom: 4px;
-        }
-
-        /* -------------------------------------------------------------------------
-           Light Mode Theme Variables
-        -------------------------------------------------------------------------- */
-        body.light-theme {
-            --bg-color: #f0f2f5;
-            --surface-color: #ffffff;
-            --surface-alt: #f9fafb;
-            --surface-hover: #f3f4f6;
-            --border-color: #d1d5db;
-            --border-focus: #9ca3af;
-            --text-primary: #0f172a;
-            --text-secondary: #334155;
-            --text-muted: #64748b;
-            --accent-green: #16a34a;
-        }
-
-        /* Modal Tabs */
         .modal-tabs {
             display: flex;
             gap: 20px;
@@ -1549,23 +1014,13 @@
             color: var(--accent-green);
         }
 
-        /* Theme Toggle Button */
-        .btn-theme {
-            background: transparent;
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            padding: 6px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
+        ::-webkit-scrollbar {
+            width: 6px;
         }
 
-        .btn-theme:hover {
-            color: var(--text-primary);
-            background: var(--surface-hover);
+        ::-webkit-scrollbar-thumb {
+            background: #333333;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -2509,7 +1964,7 @@
                         grid.innerHTML += `<div class="calendar-cell empty-day"><span class="calendar-date">${i}</span></div>`;
                     } else {
                         // Active Day: Tiny number top left, evenly distributed posters
-                        let postersHtml = dayLogs.slice(0, 2).map(l => {
+                        let postersHtml = dayLogs.slice(0, 4).map(l => {
                             let p = l.posterPath || l.thumbUrl || '';
                             if (p && !p.startsWith('http')) p = `https://image.tmdb.org/t/p/w500${p}`;
                             return `<img class="calendar-mini-poster" style="cursor:pointer;" onclick="showFilmDetails('${l.filmId}', '${escapeHtml(l.filmTitle)}', '${p}')" src="${p}" onerror="this.style.display='none'">`;
