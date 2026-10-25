@@ -203,6 +203,53 @@
             width: 100%;
         }
 
+        /* Enforce Perfect Poster Proportions */
+        .insta-poster-img,
+        .grid-item {
+            aspect-ratio: 2 / 3 !important;
+            object-fit: cover !important;
+            width: 100%;
+            border-radius: 6px;
+        }
+
+        /* Private Note Box */
+        .private-note-display {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px dashed #555;
+            padding: 8px 12px;
+            margin-top: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #a1a1aa;
+            display: inline-block;
+        }
+
+        /* Half-Star Slider */
+        .rating-slider {
+            -webkit-appearance: none;
+            width: 120px;
+            height: 6px;
+            background: #2c3440;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .rating-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-gold);
+            cursor: pointer;
+        }
+
+        .rating-display-text {
+            color: var(--accent-gold);
+            font-weight: 700;
+            width: 40px;
+        }
+
         /* Unauthenticated Prompt */
         .login-prompt-card {
             background: var(--surface-color);
@@ -1450,7 +1497,7 @@
                 <div id="dropdown" class="dropdown"></div>
             </div>
 
-            <!-- Unified Input Form (Locked Selection) -->
+
             <!-- Unified Input Form (Locked Selection) -->
             <div id="logModule" class="log-module">
                 <!-- Selected Movie Banner -->
@@ -1471,6 +1518,7 @@
                 </div>
 
                 <!-- Date & 5-Star Rating Row -->
+                <!-- Date & Half-Star Rating Row -->
                 <div class="star-rating-row" style="flex-wrap: wrap; gap: 10px;">
                     <!-- Date Picker -->
                     <div style="display: flex; align-items: center; gap: 8px;">
@@ -1479,20 +1527,12 @@
                             style="background: var(--surface-alt); border: 1px solid var(--border-color); color: var(--text-primary); padding: 5px 8px; border-radius: var(--radius-md); font-family: inherit; font-size: 13px; outline: none;">
                     </div>
 
-                    <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
+                    <!-- Half-Star Slider -->
+                    <div style="display: flex; align-items: center; gap: 10px; margin-left: auto;">
                         <span class="rating-label">Rating</span>
-                        <div class="star-picker" id="starPicker">
-                            <button type="button" class="star-btn" data-val="1" onclick="setRating(1)"
-                                onmouseover="hoverRating(1)" onmouseleave="resetHoverRating()">★</button>
-                            <button type="button" class="star-btn" data-val="2" onclick="setRating(2)"
-                                onmouseover="hoverRating(2)" onmouseleave="resetHoverRating()">★</button>
-                            <button type="button" class="star-btn" data-val="3" onclick="setRating(3)"
-                                onmouseover="hoverRating(3)" onmouseleave="resetHoverRating()">★</button>
-                            <button type="button" class="star-btn" data-val="4" onclick="setRating(4)"
-                                onmouseover="hoverRating(4)" onmouseleave="resetHoverRating()">★</button>
-                            <button type="button" class="star-btn" data-val="5" onclick="setRating(5)"
-                                onmouseover="hoverRating(5)" onmouseleave="resetHoverRating()">★</button>
-                        </div>
+                        <input type="range" id="starSlider" class="rating-slider" min="0" max="5" step="0.5" value="0"
+                            oninput="document.getElementById('ratingVal').innerText = this.value > 0 ? this.value + ' ★' : 'None'; currentRating = parseFloat(this.value);">
+                        <span id="ratingVal" class="rating-display-text">None</span>
                     </div>
                 </div>
 
@@ -1996,26 +2036,29 @@
             return starsHtml;
         }
 
+        / -------------------------------------------------------------------------
+        // Feed Card Generator (Now with Private Notes)
+        // -------------------------------------------------------------------------
         function createInstaCardElement(item) {
             const card = document.createElement('article');
             card.className = 'insta-card';
-            card.id = `card-${item.id || Math.random().toString(36).substr(2, 9)}`;
 
-            const username = item.username || item.ownerId || item.userId || "user_123";
+            const username = item.username || item.ownerId || item.userId || "user";
             const relativeTime = getRelativeTime(item.createdAt);
             const title = item.filmTitle || item.title || "Untitled Film";
             const year = item.year ? `(${item.year})` : '';
 
-            // Fix broken images & enforce secure URLs
             let posterSrc = item.posterPath || '';
-            if (posterSrc && !posterSrc.startsWith('http')) {
-                posterSrc = `https://image.tmdb.org/t/p/w500${posterSrc}`;
-            } else if (!posterSrc) {
-                posterSrc = 'https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster';
-            }
+            if (posterSrc && !posterSrc.startsWith('http')) posterSrc = `https://image.tmdb.org/t/p/w500${posterSrc}`;
+            if (!posterSrc) posterSrc = 'https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster';
 
-            const starsHtml = item.rating ? buildStarDisplay(item.rating) : '';
-            const captionBody = item.review || (item.feedMessage ? item.feedMessage : "");
+            const starsHtml = item.rating ? `<div class="insta-stars" style="color:var(--accent-gold); font-size:14px;">${item.rating} ★</div>` : '';
+            const captionBody = item.review || "";
+
+            // Only show private note if you are the owner of the log
+            const privateNoteHtml = (item.userId === currentUserId && item.privateNote)
+                ? `<div class="private-note-display">🔒 <b>Private:</b> ${escapeHtml(item.privateNote)}</div>`
+                : '';
 
             card.innerHTML = `
                 <div class="insta-header">
@@ -2023,7 +2066,6 @@
                         <div class="insta-avatar clickable-user" onclick="openProfile('${escapeHtml(username)}')">${escapeHtml(username.charAt(0).toUpperCase())}</div>
                         <div class="insta-user-info">
                             <span class="insta-username clickable-user" onclick="openProfile('${escapeHtml(username)}')">${escapeHtml(username)}</span>
-                            <span class="insta-dot">•</span>
                             <span class="insta-time">${relativeTime}</span>
                         </div>
                     </div>
@@ -2034,9 +2076,10 @@
                 </div>
 
                 <div class="insta-caption-area" style="padding-top: 14px;">
-                    <div class="insta-film-title-row">${escapeHtml(title)} ${year}</div>
+                    <div class="insta-film-title-row" style="font-size:18px; font-weight:700;">${escapeHtml(title)} ${year}</div>
                     ${starsHtml}
-                    ${captionBody ? `<div class="insta-caption-text" style="margin-top: 6px;"><span class="insta-caption-username">${escapeHtml(username)}</span><span>${escapeHtml(captionBody)}</span></div>` : ''}
+                    ${captionBody ? `<div class="insta-caption-text" style="margin-top: 8px;"><span>${escapeHtml(captionBody)}</span></div>` : ''}
+                    ${privateNoteHtml}
                 </div>
             `;
             return card;
@@ -2118,43 +2161,45 @@
         }
 
         // -------------------------------------------------------------------------
-        // Profile Routing & Follow Logic
+        // Profile Viewer (Fixed Broken Posters)
         // -------------------------------------------------------------------------
         async function openProfile(username) {
-            document.getElementById('feedList').style.display = 'none';
-            if (document.getElementById('loggerCard')) document.getElementById('loggerCard').style.display = 'none';
-            document.getElementById('profileView').style.display = 'block';
+            if (!username) return;
+            document.getElementById('feedListContainer').style.display = 'none';
+            document.getElementById('calendarView').style.display = 'none';
+            document.getElementById('watchlistView').style.display = 'none';
+            document.getElementById('recapView').style.display = 'none';
 
-            document.getElementById('profileUsernameDisplay').innerText = username;
-            document.getElementById('profileAvatarLg').innerText = username.charAt(0).toUpperCase();
+            const profileView = document.getElementById('profileView');
+            profileView.style.display = 'block';
+            document.getElementById('profileUsername').innerText = username;
 
-            const followBtn = document.getElementById('profileFollowBtn');
-            if (username === currentUser) {
-                followBtn.style.display = 'none';
-            } else {
-                followBtn.style.display = 'block';
-                followBtn.innerText = 'Follow'; // Will sync with DB state in a future polish update
-                followBtn.onclick = () => executeFollowToggle(username, followBtn);
-            }
-
-            // Fetch and render the user's movie grid
             const grid = document.getElementById('profileGrid');
-            grid.innerHTML = '<div style="color:#a1a1aa; grid-column: span 3; text-align: center; padding: 20px;">Loading films...</div>';
+            grid.innerHTML = '<div style="color:var(--text-muted); padding:20px;">Loading logs...</div>';
 
             try {
-                const res = await fetch(`${API_BASE}/getUserLogs?username=${encodeURIComponent(username)}`);
+                const res = await fetch(`${API_BASE}/getUserLogs?username=${username}`);
                 const logs = await res.json();
+
                 grid.innerHTML = '';
-                if (!logs.length) {
-                    grid.innerHTML = '<div style="color:#a1a1aa; grid-column: span 3; text-align: center; padding: 20px;">No films logged yet.</div>';
+                if (!logs || logs.length === 0) {
+                    grid.innerHTML = '<div style="color:var(--text-muted); padding:20px;">No films logged yet.</div>';
                     return;
                 }
-                logs.forEach(log => {
-                    const poster = log.posterPath || 'https://via.placeholder.com/92x138/1f1f1f/777777?text=No+Poster';
-                    grid.innerHTML += `<img class="grid-item" src="${poster}" alt="${escapeHtml(log.filmTitle)}">`;
+
+                logs.forEach(item => {
+                    // FIX: Apply the same secure image processing to profile posters
+                    let posterSrc = item.posterPath || item.thumbUrl || '';
+                    if (posterSrc && !posterSrc.startsWith('http')) posterSrc = `https://image.tmdb.org/t/p/w500${posterSrc}`;
+                    if (!posterSrc) posterSrc = 'https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster';
+
+                    const title = item.filmTitle || item.title || "Unknown";
+
+                    // Add aspect-ratio and clickable modal to grid
+                    grid.innerHTML += `<img class="grid-item" src="${posterSrc}" alt="${escapeHtml(title)}" style="cursor:pointer;" onclick="showFilmDetails('${item.filmId}', '${escapeHtml(title)}', '${posterSrc}')" onerror="this.src='https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster'">`;
                 });
             } catch (err) {
-                grid.innerHTML = '<div style="color:#f87171; grid-column: span 3; text-align: center;">Failed to load grid.</div>';
+                grid.innerHTML = '<div style="color:#f87171;">Error loading logs.</div>';
             }
         }
 
