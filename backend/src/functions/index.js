@@ -158,13 +158,16 @@ app.http('log', {
 
       const logRecord = {
         id: body.id || randomUUID(),
-        userId: body.userId,
+        userId: body.userId,       // FIX: Saves the GUID
+        username: body.username,   // FIX: Saves 'seazecho'
         filmId: body.filmId || null,
         filmTitle: body.filmTitle || body.title || null,
+        year: body.year,
+        posterPath: body.posterPath,
         rating: body.rating !== undefined ? body.rating : null,
         review: body.review || null,
-        loggedAt: body.loggedAt || new Date().toISOString(),
-        ...body
+        privateNote: body.privateNote || null, // Saves the secret note
+        loggedAt: body.loggedAt || new Date().toISOString() // Saves chosen date
       };
 
       // 1. Save log record into Cosmos DB 'logs' container
@@ -712,7 +715,7 @@ app.storageQueue('processRecapWorker', {
       };
 
       await db.container('recaps').items.upsert(recapData);
-      context.log(`Successfully generated recap for ${userId} - ${month}`);
+      context.log(`Successfully generated recap for ${userId}_${month}`);
     } catch (err) {
       context.error('Worker failed to generate recap:', err);
     }

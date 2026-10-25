@@ -1261,6 +1261,7 @@
             </div>
 
             <!-- Unified Input Form (Locked Selection) -->
+            <!-- Unified Input Form (Locked Selection) -->
             <div id="logModule" class="log-module">
                 <!-- Selected Movie Banner -->
                 <div class="selected-movie-header">
@@ -1270,46 +1271,55 @@
                         <div id="selectedTitle" class="selected-title"></div>
                         <div id="selectedYear" class="selected-year"></div>
                     </div>
+                    <!-- Quick Watchlist Button -->
+                    <button id="quickWatchlistBtn" class="change-selection-btn"
+                        style="margin-right: 6px; color: var(--accent-green); border-color: var(--accent-green);"
+                        onclick="addToWatchlistFromLog()">
+                        + Watchlist
+                    </button>
                     <button class="change-selection-btn" onclick="cancelSelection()">Change</button>
                 </div>
 
-                <!-- 5-Star Rating Selector -->
-                <div class="star-rating-row">
-                    <span class="rating-label">Rating</span>
-                    <div class="star-picker" id="starPicker">
-                        <button type="button" class="star-btn" data-val="1" onclick="setRating(1)"
-                            onmouseover="hoverRating(1)" onmouseleave="resetHoverRating()">★</button>
-                        <button type="button" class="star-btn" data-val="2" onclick="setRating(2)"
-                            onmouseover="hoverRating(2)" onmouseleave="resetHoverRating()">★</button>
-                        <button type="button" class="star-btn" data-val="3" onclick="setRating(3)"
-                            onmouseover="hoverRating(3)" onmouseleave="resetHoverRating()">★</button>
-                        <button type="button" class="star-btn" data-val="4" onclick="setRating(4)"
-                            onmouseover="hoverRating(4)" onmouseleave="resetHoverRating()">★</button>
-                        <button type="button" class="star-btn" data-val="5" onclick="setRating(5)"
-                            onmouseover="hoverRating(5)" onmouseleave="resetHoverRating()">★</button>
+                <!-- Date & 5-Star Rating Row -->
+                <div class="star-rating-row" style="flex-wrap: wrap; gap: 10px;">
+                    <!-- Date Picker -->
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="rating-label">Watched</span>
+                        <input type="date" id="logDatepicker"
+                            style="background: var(--surface-alt); border: 1px solid var(--border-color); color: var(--text-primary); padding: 5px 8px; border-radius: var(--radius-md); font-family: inherit; font-size: 13px; outline: none;">
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
+                        <span class="rating-label">Rating</span>
+                        <div class="star-picker" id="starPicker">
+                            <button type="button" class="star-btn" data-val="1" onclick="setRating(1)"
+                                onmouseover="hoverRating(1)" onmouseleave="resetHoverRating()">★</button>
+                            <button type="button" class="star-btn" data-val="2" onclick="setRating(2)"
+                                onmouseover="hoverRating(2)" onmouseleave="resetHoverRating()">★</button>
+                            <button type="button" class="star-btn" data-val="3" onclick="setRating(3)"
+                                onmouseover="hoverRating(3)" onmouseleave="resetHoverRating()">★</button>
+                            <button type="button" class="star-btn" data-val="4" onclick="setRating(4)"
+                                onmouseover="hoverRating(4)" onmouseleave="resetHoverRating()">★</button>
+                            <button type="button" class="star-btn" data-val="5" onclick="setRating(5)"
+                                onmouseover="hoverRating(5)" onmouseleave="resetHoverRating()">★</button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Review / Note Textarea -->
-                <textarea id="logReviewText" class="log-textarea" rows="3"
-                    placeholder="Write your review, note, or memorable quotes..."></textarea>
+                <!-- Dual Textareas: Public Review + Private Note -->
+                <textarea id="logReviewText" class="log-textarea" rows="2" style="margin-bottom: 8px;"
+                    placeholder="Public review (visible in circle feed)..."></textarea>
 
-                <!-- Bottom Row: Public vs. Private Toggle + Actions -->
-                <div class="module-bottom-bar">
-                    <!-- Toggle Switch -->
-                    <div class="privacy-toggle-container" onclick="togglePrivacySwitch()"
-                        title="Toggle public or private visibility">
-                        <div id="privacySwitchTrack" class="switch-track active">
-                            <div class="switch-thumb"></div>
-                        </div>
-                        <span id="privacyLabelText" class="privacy-label-text">Public to Circle</span>
-                    </div>
+                <textarea id="logPrivateNote" class="log-textarea" rows="2"
+                    style="background: rgba(0,0,0,0.2); border-style: dashed;"
+                    placeholder="Private notes (visible only to you)..."></textarea>
 
-                    <!-- Actions -->
+                <!-- Bottom Row: Actions -->
+                <div class="module-bottom-bar" style="justify-content: flex-end;">
                     <div class="module-actions">
                         <button class="btn-cancel" onclick="cancelSelection()">Cancel</button>
                         <button id="publishBtn" class="btn-publish" onclick="publishLogEntry()">
-                            <span>Publish</span>
+                            <span>Log Film</span>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2.5">
                                 <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -1415,6 +1425,7 @@
         const API_BASE = "https://func-slate-app-wijb3v.azurewebsites.net/api";
 
         let currentUser = null; // Dynamically set from Azure SWA /.auth/me
+        let currentUserId = null; // FIX: Stores the GUID for the database
         let debounceTimer;
         let selectedMovie = null;
         let currentRating = 0;
@@ -1446,6 +1457,7 @@
 
                 if (clientPrincipal && clientPrincipal.userDetails) {
                     currentUser = clientPrincipal.userDetails;
+                    currentUserId = clientPrincipal.userId;
                     renderAuthenticatedUI(clientPrincipal);
                     // Encode the profile to base64 so the backend can read it
                     const encodedPrincipal = btoa(JSON.stringify(clientPrincipal));
@@ -1592,15 +1604,11 @@
         }
 
         // -------------------------------------------------------------------------
+        // -------------------------------------------------------------------------
         // Lock Selection in Unified Input Module
         // -------------------------------------------------------------------------
         function lockInMovieSelection(film, year, thumbUrl) {
-            selectedMovie = {
-                id: film.id,
-                title: film.title,
-                year: year,
-                posterPath: film.poster_path || ''
-            };
+            selectedMovie = { id: film.id, title: film.title, year: year, posterPath: film.poster_path || '' };
 
             document.getElementById('dropdown').style.display = 'none';
             document.getElementById('movieSearch').value = film.title;
@@ -1610,13 +1618,12 @@
             document.getElementById('selectedYear').innerText = `Released ${year}`;
             document.getElementById('selectedPosterThumb').src = thumbUrl;
 
-            // Reset inputs
+            // Reset inputs & set datepicker to today
             document.getElementById('logReviewText').value = '';
+            document.getElementById('logPrivateNote').value = '';
+            document.getElementById('logDatepicker').value = new Date().toISOString().split('T')[0];
             setRating(0);
-            isPublic = true;
-            updatePrivacyToggleUI();
 
-            // Reveal module
             document.getElementById('logModule').style.display = 'block';
         }
 
@@ -1627,6 +1634,37 @@
             document.getElementById('clearSearchBtn').style.display = 'none';
             document.getElementById('status').innerText = '';
             setRating(0);
+        }
+
+        async function addToWatchlistFromLog() {
+            if (!selectedMovie || !currentUser) return alert("Log in to use Watchlist.");
+            const btn = document.getElementById('quickWatchlistBtn');
+            btn.innerText = "Saving...";
+
+            try {
+                let headers = { 'Content-Type': 'application/json' };
+                const authRes = await fetch('/.auth/me').catch(() => null);
+                if (authRes && authRes.ok) {
+                    const payload = await authRes.json();
+                    if (payload.clientPrincipal) headers['x-ms-client-principal'] = btoa(JSON.stringify(payload.clientPrincipal));
+                }
+
+                await fetch(`${API_BASE}/toggleWatchlist`, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({
+                        filmId: selectedMovie.id,
+                        title: selectedMovie.title,
+                        posterPath: selectedMovie.posterPath ? `https://image.tmdb.org/t/p/w500${selectedMovie.posterPath}` : '',
+                        action: 'add'
+                    })
+                });
+
+                btn.innerText = "✓ Saved";
+                setTimeout(() => cancelSelection(), 1500);
+            } catch (e) {
+                btn.innerText = "Error";
+            }
         }
 
         // -------------------------------------------------------------------------
@@ -1666,110 +1704,67 @@
         }
 
         // -------------------------------------------------------------------------
-        // Privacy Toggle Switch Handler
-        // -------------------------------------------------------------------------
-        function togglePrivacySwitch() {
-            isPublic = !isPublic;
-            updatePrivacyToggleUI();
-        }
-
-        function updatePrivacyToggleUI() {
-            const track = document.getElementById('privacySwitchTrack');
-            const label = document.getElementById('privacyLabelText');
-
-            if (isPublic) {
-                track.classList.add('active');
-                label.innerText = "Public to Circle";
-                label.style.color = "var(--text-secondary)";
-            } else {
-                track.classList.remove('active');
-                label.innerText = "Private (Only You)";
-                label.style.color = "#fca5a5";
-            }
-        }
-
-        // -------------------------------------------------------------------------
-        // Publish & Live Optimistic Update (using real authenticated currentUser)
+        // Publish & Live Optimistic Update
         // -------------------------------------------------------------------------
         async function publishLogEntry() {
             if (isPublishing || !selectedMovie) return;
 
             const reviewText = document.getElementById('logReviewText').value.trim();
+            const privateNote = document.getElementById('logPrivateNote').value.trim();
+            const watchedDate = document.getElementById('logDatepicker').value;
             const statusEl = document.getElementById('status');
-            const activeUsername = currentUser || "user_123";
 
-            // Optimistic Item
-            const optimisticItem = {
-                id: 'opt_' + Date.now(),
-                ownerId: activeUsername,
-                userId: activeUsername,
-                filmId: selectedMovie.id.toString(),
-                filmTitle: selectedMovie.title,
-                year: selectedMovie.year,
-                posterPath: selectedMovie.posterPath,
-                rating: currentRating > 0 ? currentRating : null,
-                review: reviewText,
-                isPrivate: !isPublic,
-                createdAt: new Date().toISOString()
-            };
+            const now = new Date();
+            const chosenTimestamp = `${watchedDate}T${now.toISOString().split('T')[1]}`;
 
-            // Prepend optimistic card to feed
-            const feedList = document.getElementById('feedList');
-            const loadingState = document.getElementById('feedLoadingState');
-            if (loadingState) {
-                loadingState.remove();
-            }
-
-            const card = createInstaCardElement(optimisticItem);
-            card.classList.add('optimistic-entry');
-            feedList.prepend(card);
-
-            // Backend payload with real authenticated username
+            // FIX: Send BOTH the GUID and the Username to the backend
             const payload = {
                 filmId: selectedMovie.id.toString(),
                 title: selectedMovie.title,
                 year: selectedMovie.year,
-                userId: activeUsername,
+                userId: currentUserId || "user_123", // GUID for DB queries
+                username: currentUser || "user_123", // String for UI display
                 rating: currentRating > 0 ? currentRating : null,
                 review: reviewText,
-                isPrivate: !isPublic,
-                posterPath: selectedMovie.posterPath
+                privateNote: privateNote,
+                isPrivate: false,
+                posterPath: selectedMovie.posterPath,
+                loggedAt: chosenTimestamp
             };
 
-            // Reset UI
             cancelSelection();
-            statusEl.innerText = "Film logged to feed!";
+            statusEl.innerText = "Film logged!";
             statusEl.style.color = "#4ade80";
-            setTimeout(() => {
-                if (statusEl.innerText === "Film logged to feed!") {
-                    statusEl.innerText = "";
-                }
-            }, 3000);
+            setTimeout(() => { if (statusEl.innerText === "Film logged!") statusEl.innerText = ""; }, 3000);
 
-            // POST to /api/log
             try {
                 isPublishing = true;
+                let headers = { 'Content-Type': 'application/json' };
+                const authRes = await fetch('/.auth/me').catch(() => null);
+                if (authRes && authRes.ok) {
+                    const payloadAuth = await authRes.json();
+                    if (payloadAuth.clientPrincipal) headers['x-ms-client-principal'] = btoa(JSON.stringify(payloadAuth.clientPrincipal));
+                }
+
                 const response = await fetch(`${API_BASE}/log`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: headers,
                     body: JSON.stringify(payload)
                 });
 
-                if (!response.ok) {
-                    const errText = await response.text();
-                    console.error("Backend error:", errText);
-                    statusEl.innerText = `Note: Saved locally. Backend responded: ${errText}`;
+                if (response.ok) {
+                    loadFeed(); // Refresh feed
+                } else {
+                    statusEl.innerText = "Error saving to backend.";
                     statusEl.style.color = "#f87171";
                 }
             } catch (err) {
-                console.error("Network error:", err);
-                statusEl.innerText = "Network Error: Saved locally in feed.";
+                statusEl.innerText = "Network Error.";
                 statusEl.style.color = "#f87171";
             } finally {
                 isPublishing = false;
             }
         }
-
         // -------------------------------------------------------------------------
         // Instagram Feed Card Generator
         // -------------------------------------------------------------------------
@@ -1806,7 +1801,7 @@
             card.className = 'insta-card';
             card.id = `card-${item.id || Math.random().toString(36).substr(2, 9)}`;
 
-            const username = item.ownerId || item.userId || "user_123";
+            const username = item.username || item.ownerId || item.userId || "user_123"; // FIX: Prioritize username
             const relativeTime = getRelativeTime(item.createdAt);
             const title = item.filmTitle || item.title || "Untitled Film";
             const year = item.year ? `(${item.year})` : '';
@@ -2214,6 +2209,7 @@
                             <h2 style="color: var(--accent-green); margin-bottom: 12px;">Monthly Stats</h2>
                             <p style="margin-bottom: 8px;">Films Watched: <strong>${data.stats.totalFilms}</strong></p>
                             <p>Highest Rated: <strong>${escapeHtml(data.stats.highestRatedFilm)}</strong> (${data.stats.maxRating} ★)</p>
+                            <button class="btn-cancel" style="margin-top: 16px; border: 1px solid var(--border-color); width: 100%;" onclick="requestMonthlyRecap()">Regenerate Recap</button>
                         </div>
                     `;
                 }
