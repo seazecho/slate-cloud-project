@@ -1189,7 +1189,7 @@
                 if (clientPrincipal && clientPrincipal.userDetails) {
                     currentUser = clientPrincipal.userDetails;
                     renderAuthenticatedUI(clientPrincipal);
-                    fetch('/api/syncUser');
+                    fetch('https://func-slate-app-wijb3v.azurewebsites.net/api/syncUser');
                 } else {
                     currentUser = null;
                     renderUnauthenticatedUI();
