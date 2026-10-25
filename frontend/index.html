@@ -1241,6 +1241,7 @@
         </section>
 
         <!-- User Profile View -->
+        <!-- User Profile View -->
         <section id="profileView" class="profile-view">
             <button class="btn-back" onclick="closeProfile()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1256,10 +1257,28 @@
                 </div>
                 <button id="profileFollowBtn" class="btn-follow">Follow</button>
             </div>
-            <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 16px;">
-            <div style="text-align: center; color: var(--text-muted); font-size: 13.5px; padding: 20px 0;">
-                Film grid coming in next update...
-            </div>
+
+            <style>
+                .profile-grid {
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 10px;
+                    margin-top: 16px;
+                    border-top: 1px solid var(--border-color);
+                    padding-top: 16px;
+                }
+
+                .grid-item {
+                    width: 100%;
+                    aspect-ratio: 2/3;
+                    object-fit: cover;
+                    border-radius: 6px;
+                    background: #141414;
+                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+                }
+            </style>
+
+            <div id="profileGrid" class="profile-grid"></div>
         </section>
 
         <!-- Instagram-Style Social Feed -->
@@ -1812,30 +1831,31 @@
         async function loadFeed() {
             const feedList = document.getElementById('feedList');
             try {
-                const response = await fetch(`${API_BASE}/getFeed`);
+                // Pass auth header so the backend knows whose social graph to check
+                let headers = {};
+                const authRes = await fetch('/.auth/me').catch(() => null);
+                if (authRes && authRes.ok) {
+                    const payload = await authRes.json();
+                    if (payload.clientPrincipal) {
+                        headers['x-ms-client-principal'] = btoa(JSON.stringify(payload.clientPrincipal));
+                    }
+                }
+
+                const response = await fetch(`${API_BASE}/getFeed`, { headers });
                 if (!response.ok) return;
 
                 const items = await response.json();
                 feedList.innerHTML = '';
 
                 if (!items || items.length === 0) {
-                    feedList.innerHTML = `
-                        <div class="empty-feed-state">
-                            No films in the circle feed yet. Log in to share the first film!
-                        </div>
-                    `;
+                    feedList.innerHTML = `<div class="empty-feed-state">No films in the circle feed yet. Log in and follow users to build your feed!</div>`;
                     return;
                 }
 
-                items.forEach(item => {
-                    const card = createInstaCardElement(item);
-                    feedList.appendChild(card);
-                });
+                items.forEach(item => feedList.appendChild(createInstaCardElement(item)));
             } catch (error) {
-                console.error("Could not load feed:", error);
-                const loadingState = document.getElementById('feedLoadingState');
-                if (loadingState) {
-                    loadingState.innerText = "Unable to connect to circle feed.";
+                if (document.getElementById('feedLoadingState')) {
+                    document.getElementById('feedLoadingState').innerText = "Unable to connect to circle feed.";
                 }
             }
         }
@@ -1843,11 +1863,9 @@
         // -------------------------------------------------------------------------
         // Profile Routing & Follow Logic
         // -------------------------------------------------------------------------
-        function openProfile(username) {
+        async function openProfile(username) {
             document.getElementById('feedList').style.display = 'none';
-            if (document.getElementById('loggerCard')) {
-                document.getElementById('loggerCard').style.display = 'none';
-            }
+            if (document.getElementById('loggerCard')) document.getElementById('loggerCard').style.display = 'none';
             document.getElementById('profileView').style.display = 'block';
 
             document.getElementById('profileUsernameDisplay').innerText = username;
@@ -1855,12 +1873,31 @@
 
             const followBtn = document.getElementById('profileFollowBtn');
             if (username === currentUser) {
-                followBtn.style.display = 'none'; // Hide button on your own profile
+                followBtn.style.display = 'none';
             } else {
                 followBtn.style.display = 'block';
-                followBtn.innerText = 'Follow';
-                followBtn.classList.remove('active-following');
+                followBtn.innerText = 'Follow'; // Will sync with DB state in a future polish update
                 followBtn.onclick = () => executeFollowToggle(username, followBtn);
+            }
+
+            // Fetch and render the user's movie grid
+            const grid = document.getElementById('profileGrid');
+            grid.innerHTML = '<div style="color:#a1a1aa; grid-column: span 3; text-align: center; padding: 20px;">Loading films...</div>';
+
+            try {
+                const res = await fetch(`${API_BASE}/getUserLogs?username=${encodeURIComponent(username)}`);
+                const logs = await res.json();
+                grid.innerHTML = '';
+                if (!logs.length) {
+                    grid.innerHTML = '<div style="color:#a1a1aa; grid-column: span 3; text-align: center; padding: 20px;">No films logged yet.</div>';
+                    return;
+                }
+                logs.forEach(log => {
+                    const poster = log.posterPath || 'https://via.placeholder.com/92x138/1f1f1f/777777?text=No+Poster';
+                    grid.innerHTML += `<img class="grid-item" src="${poster}" alt="${escapeHtml(log.filmTitle)}">`;
+                });
+            } catch (err) {
+                grid.innerHTML = '<div style="color:#f87171; grid-column: span 3; text-align: center;">Failed to load grid.</div>';
             }
         }
 

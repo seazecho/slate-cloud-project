@@ -261,7 +261,7 @@ app.storageQueue('feedWorker', {
 });
 
 // -----------------------------------------------------------------------------
-// 4. getFeed (HTTP GET)
+// 4. getFeed (HTTP GET) - REBUILT FOR SOCIAL GRAPH
 // -----------------------------------------------------------------------------
 app.http('getFeed', {
   methods: ['GET'],
@@ -269,29 +269,68 @@ app.http('getFeed', {
   handler: async (request, context) => {
     try {
       const db = getCosmosDatabase();
-      const feedContainer = db.container('feed');
+      const usersContainer = db.container('users');
+      const logsContainer = db.container('logs');
 
-      // Query the feed container, ordered by newest first
+      // 1. Identify the user asking for the feed
+      const principalHeader = request.headers.get('x-ms-client-principal') || request.headers.get('X-MS-CLIENT-PRINCIPAL');
+
+      // If not logged in, return an empty feed rather than global feed
+      if (!principalHeader) {
+        return { status: 200, headers: { 'Content-Type': 'application/json' }, jsonBody: [] };
+      }
+
+      const decoded = Buffer.from(principalHeader, 'base64').toString('utf8');
+      const currentUserId = JSON.parse(decoded).userId;
+
+      // 2. Look up who they follow
+      let followingIds = [];
+      try {
+        const { resource: userProfile } = await usersContainer.item(currentUserId, currentUserId).read();
+        if (userProfile && Array.isArray(userProfile.following)) {
+          followingIds = userProfile.following;
+        }
+      } catch (err) {
+        context.log('User profile not found, defaulting to empty following list.');
+      }
+
+      // Add self to the feed so they see their own posts
+      followingIds.push(currentUserId);
+
+      // 3. Query the LOGS container (not the feed queue) for immediate, accurate data
+      // We construct a dynamic SQL query based on the following array
+      const quotedIds = followingIds.map(id => `'${id}'`).join(',');
       const querySpec = {
-        query: 'SELECT TOP 10 * FROM c ORDER BY c.createdAt DESC'
+        query: `SELECT TOP 20 * FROM c WHERE c.userId IN (${quotedIds}) ORDER BY c.loggedAt DESC`
       };
 
-      const { resources: feedItems } = await feedContainer.items.query(querySpec).fetchAll();
+      const { resources: directLogs } = await logsContainer.items.query(querySpec).fetchAll();
+
+      // 4. Map the raw logs into the exact format the frontend expects
+      const formattedFeed = directLogs.map(log => ({
+        id: log.id,
+        ownerId: log.userId,
+        userId: log.userId,
+        filmTitle: log.filmTitle,
+        year: log.year,
+        posterPath: log.posterPath || log.thumbUrl,
+        rating: log.rating,
+        review: log.review,
+        createdAt: log.loggedAt
+      }));
 
       return {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
-        jsonBody: feedItems
+        jsonBody: formattedFeed
       };
     } catch (err) {
-      context.error('Error fetching feed:', err);
-      return {
-        status: 500,
-        jsonBody: { error: 'Failed to retrieve activity feed.' }
-      };
+      context.error('Error fetching personalized feed:', err);
+      return { status: 500, jsonBody: { error: 'Failed to retrieve personalized feed.' } };
     }
   }
 });
+
 
 // -----------------------------------------------------------------------------
 // 5. syncUser (HTTP GET & POST)
@@ -453,3 +492,28 @@ app.http('toggleFollow', {
   }
 });
 
+// -----------------------------------------------------------------------------
+// 7. getUserLogs (HTTP GET) - FOR PROFILE GRID
+// -----------------------------------------------------------------------------
+app.http('getUserLogs', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  handler: async (request, context) => {
+    try {
+      const username = request.query.get('username');
+      if (!username) return { status: 400, jsonBody: { error: 'Username required' } };
+
+      const db = getCosmosDatabase();
+      const querySpec = {
+        query: `SELECT * FROM c WHERE c.userId = @uid ORDER BY c.loggedAt DESC`,
+        parameters: [{ name: '@uid', value: username }]
+      };
+
+      const { resources } = await db.container('logs').items.query(querySpec).fetchAll();
+      return { status: 200, headers: { 'Content-Type': 'application/json' }, jsonBody: resources };
+    } catch (err) {
+      context.error(err);
+      return { status: 500, jsonBody: { error: 'Grid fetch failed' } };
+    }
+  }
+});
