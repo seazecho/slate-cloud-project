@@ -738,15 +738,20 @@
             gap: 20px;
         }
 
+        /* -------------------------------------------------------------------------
+           Side-by-Side Desktop Feed Layout (Instagram Style)
+        -------------------------------------------------------------------------- */
         .insta-card {
+            display: flex;
+            flex-direction: row;
             background: var(--surface-color);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
             overflow: hidden;
             box-shadow: var(--shadow-card);
-            display: flex;
-            flex-direction: column;
-            position: relative;
+            height: 550px;
+            /* Fixed height for the side-by-side view */
+            width: 100%;
         }
 
         .insta-card.optimistic-entry {
@@ -765,13 +770,7 @@
             }
         }
 
-        /* 1. Header */
-        .insta-header {
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+
 
         .insta-user-meta {
             display: flex;
@@ -843,6 +842,74 @@
             overflow: hidden;
             border-top: 1px solid rgba(255, 255, 255, 0.04);
             border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        /* LEFT SIDE: Uncropped Poster */
+        .insta-media-left {
+            width: 55%;
+            background: #000;
+            /* Letterboxing for uncropped images */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .insta-media-left img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain !important;
+            /* NEVER CROP */
+        }
+
+        /* RIGHT SIDE: Details, Reviews, Comments */
+        .insta-content-right {
+            width: 45%;
+            display: flex;
+            flex-direction: column;
+            background: var(--surface-color);
+        }
+
+        /* Right Side Header (User & Dates) */
+        .insta-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .insta-header-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .insta-date-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Right Side Body (Scrollable Review & Stars) */
+        .insta-body {
+            padding: 16px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .insta-stars-display {
+            color: var(--accent-gold);
+            font-size: 18px;
+            letter-spacing: 2px;
+            margin: 8px 0;
+            text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
+        }
+
+        /* Right Side Footer (Comments Area) */
+        .insta-footer {
+            padding: 16px;
+            border-top: 1px solid var(--border-color);
+            background: var(--surface-alt);
         }
 
         .insta-poster-img {
@@ -1215,45 +1282,63 @@
             border-bottom-color: var(--accent-green);
         }
 
-        .calendar-header {
+        /* -------------------------------------------------------------------------
+           Calendar: Big Numbers & Even Posters
+        -------------------------------------------------------------------------- */
+        .calendar-cell {
+            aspect-ratio: 1;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 6px;
-        }
-
-        .calendar-day-header {
-            text-align: center;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-
-
-
-        .calendar-date {
-            font-size: 11px;
-            color: var(--text-muted);
-            font-weight: 600;
-            margin-bottom: 2px;
-            z-index: 2;
+            flex-direction: column;
             position: relative;
+            overflow: hidden;
         }
 
+        /* Empty Day Layout */
+        .calendar-cell.empty-day {
+            align-items: center;
+            justify-content: center;
+        }
+
+        .calendar-cell.empty-day .calendar-date {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-muted);
+            opacity: 0.4;
+            margin: 0;
+        }
+
+        /* Active Day Layout */
+        .calendar-cell.active-day {
+            padding: 6px;
+        }
+
+        .calendar-cell.active-day .calendar-date {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .calendar-posters {
+            display: flex;
+            gap: 4px;
+            height: 100%;
+            width: 100%;
+            justify-content: center;
+        }
 
         .calendar-mini-poster {
-            width: calc(50% - 1px);
-            aspect-ratio: 2/3;
-            object-fit: cover;
-            border-radius: 2px;
+            flex: 1;
+            max-width: 50%;
+            /* Prevents more than 2 from breaking layout */
+            height: 100%;
+            object-fit: contain !important;
+            /* NEVER CROP */
+            border-radius: 4px;
+            background: #141414;
         }
 
         .friend-search-bar {
@@ -1425,15 +1510,16 @@
            Light Mode Theme Variables
         -------------------------------------------------------------------------- */
         body.light-theme {
-            --bg-color: #f3f4f6;
+            --bg-color: #f0f2f5;
             --surface-color: #ffffff;
-            --surface-alt: #f8fafc;
-            --surface-hover: #e2e8f0;
-            --border-color: #cbd5e1;
-            --border-focus: #94a3b8;
+            --surface-alt: #f9fafb;
+            --surface-hover: #f3f4f6;
+            --border-color: #d1d5db;
+            --border-focus: #9ca3af;
             --text-primary: #0f172a;
             --text-secondary: #334155;
             --text-muted: #64748b;
+            --accent-green: #16a34a;
         }
 
         /* Modal Tabs */
@@ -2150,56 +2236,58 @@
         }
 
         // -------------------------------------------------------------------------
-        // Feed Card Generator (Now with Private Notes)
+        // Side-by-Side Feed Generator (Sorts by Logged Date)
         // -------------------------------------------------------------------------
         function createInstaCardElement(item) {
             const card = document.createElement('article');
             card.className = 'insta-card';
 
             const username = item.username || item.ownerId || item.userId || "user";
-            const relativeTime = getRelativeTime(item.createdAt);
             const title = item.filmTitle || item.title || "Untitled Film";
             const year = item.year ? `(${item.year})` : '';
+
+            // Handle Dates: Logged Date vs Watched Date
+            const loggedAgo = getRelativeTime(item.createdAt);
+            const watchedDateObj = item.loggedAt ? new Date(item.loggedAt) : new Date(item.createdAt);
+            const watchedStr = watchedDateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 
             let posterSrc = item.posterPath || '';
             if (posterSrc && !posterSrc.startsWith('http')) posterSrc = `https://image.tmdb.org/t/p/w500${posterSrc}`;
             if (!posterSrc) posterSrc = 'https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster';
 
-            const starsHtml = item.rating ? `<div class="insta-stars" style="color:var(--accent-gold); font-size:14px;">${item.rating} ★</div>` : '';
+            const starsHtml = item.rating ? buildStarDisplay(item.rating) : '';
             const captionBody = item.review || "";
 
-            const privateNoteHtml = (item.userId === currentUserId && item.privateNote)
-                ? `<div class="private-note-display">🔒 <b>Private:</b> ${escapeHtml(item.privateNote)}</div>`
-                : '';
-
+            // Left Side: Poster | Right Side: Details
             card.innerHTML = `
-                <div class="insta-header">
-                    <div class="insta-user-meta">
+                <div class="insta-media-left">
+                    <img src="${posterSrc}" alt="${escapeHtml(title)}" style="cursor: pointer;" onclick="showFilmDetails('${item.filmId}', '${escapeHtml(title)}', '${posterSrc}')" onerror="this.src='https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster'">
+                </div>
+                <div class="insta-content-right">
+                    <div class="insta-header">
                         <div class="insta-avatar clickable-user" onclick="openProfile('${escapeHtml(username)}')">${escapeHtml(username.charAt(0).toUpperCase())}</div>
-                        <div class="insta-user-info">
+                        <div class="insta-header-text">
                             <span class="insta-username clickable-user" onclick="openProfile('${escapeHtml(username)}')">${escapeHtml(username)}</span>
-                            <span class="insta-time">${relativeTime}</span>
+                            <span class="insta-date-meta">Logged ${loggedAgo} • Watched ${watchedStr}</span>
                         </div>
                     </div>
-                </div>
-
-                <div class="insta-media-container" style="cursor: pointer;" onclick="showFilmDetails('${item.filmId}', '${escapeHtml(title)}', '${posterSrc}')">
-                    <img class="insta-poster-img" src="${posterSrc}" alt="${escapeHtml(title)}" onerror="this.src='https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster'">
-                </div>
-
-                <div class="insta-caption-area" style="padding-top: 14px;">
-                    <div class="insta-film-title-row" style="font-size:18px; font-weight:700;">${escapeHtml(title)} ${year}</div>
-                    ${starsHtml}
-                    ${captionBody ? `<div class="insta-caption-text" style="margin-top: 8px;"><span>${escapeHtml(captionBody)}</span></div>` : ''}
-                    ${privateNoteHtml}
+                    <div class="insta-body">
+                        <div style="font-size:18px; font-weight:700; color: var(--text-primary); margin-bottom: 4px;">${escapeHtml(title)} ${year}</div>
+                        ${starsHtml}
+                        ${captionBody ? `<div style="font-size: 14px; line-height: 1.5; color: var(--text-primary); margin-top: 12px;">${escapeHtml(captionBody)}</div>` : ''}
+                    </div>
+                    <div class="insta-footer">
+                        <div style="color: var(--text-muted); font-size: 12px; margin-bottom: 8px;">View Comments...</div>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" placeholder="Add a comment..." style="flex-grow: 1; background: var(--surface-alt); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 99px; padding: 8px 12px; outline: none; font-size: 13px;">
+                            <button style="background: transparent; border: none; color: var(--accent-green); font-weight: 600; cursor: pointer; padding: 0 8px;">Post</button>
+                        </div>
+                    </div>
                 </div>
             `;
             return card;
         }
 
-        // -------------------------------------------------------------------------
-        // Load Feed from Backend (/api/getFeed)
-        // -------------------------------------------------------------------------
         async function loadFeed() {
             const feedList = document.getElementById('feedList');
             try {
@@ -2207,27 +2295,25 @@
                 const authRes = await fetch('/.auth/me').catch(() => null);
                 if (authRes && authRes.ok) {
                     const payload = await authRes.json();
-                    if (payload.clientPrincipal) {
-                        headers['x-ms-client-principal'] = btoa(JSON.stringify(payload.clientPrincipal));
-                    }
+                    if (payload.clientPrincipal) headers['x-ms-client-principal'] = btoa(JSON.stringify(payload.clientPrincipal));
                 }
 
                 const response = await fetch(`${API_BASE}/getFeed`, { headers });
                 if (!response.ok) return;
 
-                const items = await response.json();
+                let items = await response.json();
                 feedList.innerHTML = '';
 
                 if (!items || items.length === 0) {
-                    feedList.innerHTML = `<div class="empty-feed-state">No films in the circle feed yet. Log in and follow users to build your feed!</div>`;
+                    feedList.innerHTML = `<div class="empty-feed-state">No films in the circle feed yet.</div>`;
                     return;
                 }
 
+                // FORCE SORT: Logged date (createdAt), newest first
+                items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                 items.forEach(item => feedList.appendChild(createInstaCardElement(item)));
             } catch (error) {
-                if (document.getElementById('feedLoadingState')) {
-                    document.getElementById('feedLoadingState').innerText = "Unable to connect to circle feed.";
-                }
+                if (document.getElementById('feedLoadingState')) document.getElementById('feedLoadingState').innerText = "Unable to connect to circle feed.";
             }
         }
 
@@ -2329,7 +2415,9 @@
             if (tabName === 'recap') loadRecapStatus();
         }
 
-        // Upgraded Watchlist (Added Title, Year, and Date Added)
+        // -------------------------------------------------------------------------
+        // Watchlist (Added Year Bracket)
+        // -------------------------------------------------------------------------
         async function loadWatchlist() {
             const grid = document.getElementById('watchlistGrid');
             grid.innerHTML = '<div style="color:#a1a1aa; grid-column: 1/-1; text-align: center; padding: 20px;">Loading watchlist...</div>';
@@ -2344,31 +2432,24 @@
 
                 const res = await fetch(`${API_BASE}/getWatchlist`, { headers });
                 const list = await res.json();
-
                 grid.innerHTML = '';
-                if (!list || !list.length) {
-                    grid.innerHTML = '<div style="color:#a1a1aa; grid-column: 1/-1; text-align: center; padding: 20px;">Your watchlist is empty.</div>';
-                    return;
-                }
 
                 list.forEach(item => {
                     let poster = item.posterPath || '';
                     if (poster && !poster.startsWith('http')) poster = `https://image.tmdb.org/t/p/w500${poster}`;
                     if (!poster) poster = 'https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster';
 
-                    const dateAdded = item.addedAt ? new Date(item.addedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown';
+                    // Extracted year from title or data
+                    let yearStr = item.year ? `(${item.year})` : '';
 
                     grid.innerHTML += `
                         <div class="watchlist-card">
                             <img class="grid-item" style="cursor:pointer;" onclick="showFilmDetails('${item.filmId}', '${escapeHtml(item.title)}', '${poster}')" src="${poster}" onerror="this.src='https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster'">
-                            <div class="watchlist-title">${escapeHtml(item.title)}</div>
-                            <div class="watchlist-meta">Added ${dateAdded}</div>
+                            <div class="watchlist-title">${escapeHtml(item.title)} ${yearStr}</div>
                         </div>
                     `;
                 });
-            } catch (err) {
-                grid.innerHTML = '<div style="color:#f87171; grid-column: 1/-1; text-align: center;">Error loading watchlist.</div>';
-            }
+            } catch (err) { }
         }
 
         function changeMonth(offset) {
@@ -2376,17 +2457,19 @@
             loadCalendar();
         }
 
+        // -------------------------------------------------------------------------
+        // Calendar (Big Empty Numbers & Contained Posters)
+        // -------------------------------------------------------------------------
         async function loadCalendar() {
             const grid = document.getElementById('calendarGrid');
             const monthLabel = document.getElementById('calendarMonthLabel');
-
             const year = currentCalendarDate.getFullYear();
             const month = currentCalendarDate.getMonth();
             const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
             monthLabel.innerText = `${monthNames[month]} ${year}`;
 
             const apiMonth = `${year}-${String(month + 1).padStart(2, '0')}`;
-            grid.innerHTML = '<div style="grid-column: span 7; text-align: center; color: var(--text-muted); padding: 20px;">Loading calendar...</div>';
+            grid.innerHTML = '';
 
             try {
                 let headers = {};
@@ -2398,8 +2481,8 @@
 
                 const res = await fetch(`${API_BASE}/getCalendarLogs?month=${apiMonth}`, { headers });
                 const logs = await res.json();
-
                 const logsByDay = {};
+
                 if (Array.isArray(logs)) {
                     logs.forEach(log => {
                         const dayStr = log.loggedAt ? log.loggedAt.split('T')[0] : log.createdAt.split('T')[0];
@@ -2408,9 +2491,7 @@
                     });
                 }
 
-                grid.innerHTML = '';
-                const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                daysOfWeek.forEach(d => grid.innerHTML += `<div class="calendar-day-header">${d}</div>`);
+                ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(d => grid.innerHTML += `<div class="calendar-day-header">${d}</div>`);
 
                 const firstDay = new Date(year, month, 1).getDay();
                 const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -2423,24 +2504,27 @@
                     const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
                     const dayLogs = logsByDay[dayStr] || [];
 
-                    let postersHtml = dayLogs.slice(0, 4).map(l => {
-                        let p = l.posterPath || l.thumbUrl || '';
-                        if (p && !p.startsWith('http')) p = `https://image.tmdb.org/t/p/w500${p}`;
-                        if (!p) p = 'https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster';
+                    if (dayLogs.length === 0) {
+                        // Empty Day: Big centered number
+                        grid.innerHTML += `<div class="calendar-cell empty-day"><span class="calendar-date">${i}</span></div>`;
+                    } else {
+                        // Active Day: Tiny number top left, evenly distributed posters
+                        let postersHtml = dayLogs.slice(0, 2).map(l => {
+                            let p = l.posterPath || l.thumbUrl || '';
+                            if (p && !p.startsWith('http')) p = `https://image.tmdb.org/t/p/w500${p}`;
+                            return `<img class="calendar-mini-poster" style="cursor:pointer;" onclick="showFilmDetails('${l.filmId}', '${escapeHtml(l.filmTitle)}', '${p}')" src="${p}" onerror="this.style.display='none'">`;
+                        }).join('');
 
-                        return `<img class="calendar-mini-poster" style="cursor:pointer;" onclick="showFilmDetails('${l.filmId}', '${escapeHtml(l.filmTitle)}', '${p}')" src="${p}" onerror="this.src='https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster'">`;
-                    }).join('');
-
-                    grid.innerHTML += `
-                        <div class="calendar-cell">
-                            <span class="calendar-date">${i}</span>
-                            <div class="calendar-posters">${postersHtml}</div>
-                        </div>
-                    `;
+                        grid.innerHTML += `
+                            <div class="calendar-cell active-day">
+                                <span class="calendar-date">${i}</span>
+                                <div class="calendar-posters">${postersHtml}</div>
+                                ${dayLogs.length > 2 ? `<div style="text-align:center; font-size:10px; color:var(--accent-green);">+${dayLogs.length - 2} more</div>` : ''}
+                            </div>
+                        `;
+                    }
                 }
-            } catch (err) {
-                grid.innerHTML = '<div style="grid-column: span 7; text-align: center; color: #f87171; padding: 20px;">Error loading calendar.</div>';
-            }
+            } catch (err) { }
         }
 
         async function loadRecapStatus() {
