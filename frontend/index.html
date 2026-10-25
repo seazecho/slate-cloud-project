@@ -204,12 +204,28 @@
         }
 
         /* Enforce Perfect Poster Proportions */
-        .insta-poster-img,
-        .grid-item {
-            aspect-ratio: 2 / 3 !important;
-            object-fit: cover !important;
-            width: 100%;
+        .insta-poster-img {
+            width: auto;
+            max-width: 100%;
+            height: auto;
+            max-height: 520px;
+            object-fit: contain !important;
+            /* NEVER CROP */
+            display: block;
             border-radius: 6px;
+            margin: 0 auto;
+            /* Center it in the black box */
+        }
+
+        .grid-item {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 2 / 3 !important;
+            object-fit: contain !important;
+            /* NEVER CROP */
+            border-radius: 6px;
+            background: #141414;
+            /* Black letterboxing if needed */
         }
 
         /* Private Note Box */
@@ -1326,10 +1342,15 @@
 
         .film-detail-poster {
             width: 230px;
+            height: auto;
+            align-self: flex-start;
+            /* Stops it from stretching vertically */
             border-radius: 6px;
-            border: 1px solid #2c3440;
-            object-fit: cover;
+            border: 1px solid var(--border-color);
+            object-fit: contain !important;
+            /* NEVER CROP */
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            background: #141414;
         }
 
         .film-detail-info {
@@ -1691,19 +1712,25 @@
 
                 /* Evenly distributes up to 4 posters in a 2x2 grid */
                 .calendar-posters {
-                    display: grid;
-                    grid-template-columns: repeat(2, 1fr);
-                    gap: 4px;
+                    display: flex;
+                    flex-wrap: wrap;
+                    align-content: flex-start;
+                    gap: 2px;
                     flex-grow: 1;
                     z-index: 1;
+                    overflow: hidden;
+                    /* Stop spillover */
                 }
 
                 .calendar-mini-poster {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                    border-radius: 4px;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+                    width: calc(50% - 1px);
+                    /* Exactly half width minus gap */
+                    height: auto;
+                    aspect-ratio: 2/3;
+                    object-fit: contain !important;
+                    /* NEVER CROP */
+                    border-radius: 2px;
+                    background: #141414;
                 }
 
                 /* Upgraded Star Display */
