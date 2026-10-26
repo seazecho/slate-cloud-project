@@ -787,3 +787,67 @@ app.http('getFilmDetails', {
     }
   }
 });
+
+// -----------------------------------------------------------------------------
+// 15. getUserProfile (For Smart Follow & Custom Profiles)
+// -----------------------------------------------------------------------------
+app.http('getUserProfile', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  handler: async (request, context) => {
+    try {
+      const username = request.query.get('username');
+      if (!username) return { status: 400, jsonBody: { error: 'Username required' } };
+
+      const db = getCosmosDatabase();
+      const { resources } = await db.container('users').items.query({
+        query: `SELECT * FROM c WHERE c.username = @uname`,
+        parameters: [{ name: '@uname', value: username }]
+      }).fetchAll();
+
+      if (resources.length === 0) return { status: 404, jsonBody: { error: 'User not found' } };
+      return { status: 200, jsonBody: resources[0] };
+    } catch (err) {
+      return { status: 500, jsonBody: { error: 'Failed to fetch profile' } };
+    }
+  }
+});
+
+// -----------------------------------------------------------------------------
+// 16. deleteUserData (Nuke Data)
+// -----------------------------------------------------------------------------
+app.http('deleteUserData', {
+  methods: ['DELETE'],
+  authLevel: 'anonymous',
+  handler: async (request, context) => {
+    try {
+      const principalHeader = request.headers.get('x-ms-client-principal') || request.headers.get('X-MS-CLIENT-PRINCIPAL');
+      if (!principalHeader) return { status: 401 };
+      const userId = JSON.parse(Buffer.from(principalHeader, 'base64').toString('utf8')).userId;
+
+      const db = getCosmosDatabase();
+
+      // Wipe Logs
+      const { resources: logs } = await db.container('logs').items.query({
+        query: `SELECT c.id FROM c WHERE c.userId = @uid`,
+        parameters: [{ name: '@uid', value: userId }]
+      }).fetchAll();
+      for (const log of logs) { await db.container('logs').item(log.id, userId).delete().catch(() => null); }
+
+      // Wipe Watchlist
+      const { resources: watchlist } = await db.container('watchlist').items.query({
+        query: `SELECT c.id FROM c WHERE c.userId = @uid`,
+        parameters: [{ name: '@uid', value: userId }]
+      }).fetchAll();
+      for (const item of watchlist) { await db.container('watchlist').item(item.id, userId).delete().catch(() => null); }
+
+      // Wipe Recap & User Profile
+      await db.container('recaps').item(`${userId}_2026-10`, userId).delete().catch(() => null);
+      await db.container('users').item(userId, userId).delete().catch(() => null);
+
+      return { status: 200, jsonBody: { message: 'Data nuked.' } };
+    } catch (err) {
+      return { status: 500, jsonBody: { error: 'Nuke failed' } };
+    }
+  }
+});

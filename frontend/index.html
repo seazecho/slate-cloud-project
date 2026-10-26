@@ -1051,6 +1051,7 @@
             <div class="header-tab" onclick="switchTab('calendar', this)">Calendar</div>
             <div class="header-tab" onclick="switchTab('watchlist', this)">Watchlist</div>
             <div class="header-tab" onclick="switchTab('recap', this)">Recap</div>
+            <div class="header-tab" onclick="switchTab('settings', this)">Settings</div>
         </div>
 
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -1363,6 +1364,20 @@
                 </div>
             </div>
         </section>
+        <!-- 5. Settings / Nuke Data View -->
+        <section id="settingsView" style="display: none; width: 100%;">
+            <div class="logger-card" style="border-color: #ef4444; text-align: center; padding: 40px 20px;">
+                <h3 style="color: #ef4444; margin-bottom: 12px; font-size: 24px;">Danger Zone</h3>
+                <p style="color: var(--text-muted); font-size: 14.5px; margin-bottom: 24px;">
+                    This will permanently delete your profile, social graph, watchlist, and all movie logs from the
+                    database.<br>This action cannot be undone.
+                </p>
+                <button onclick="nukeMyData()"
+                    style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px;">
+                    Delete All My Data
+                </button>
+            </div>
+        </section>
     </main>
 
     <!-- Clickable Poster Modal -->
@@ -1379,6 +1394,7 @@
 
         let currentUser = null;
         let currentUserId = null;
+        let myFollowing = []; // Tracks who you follow for the Smart Button
         let debounceTimer;
         let selectedMovie = null;
         let currentRating = 0;
@@ -1411,9 +1427,11 @@
                     renderAuthenticatedUI(clientPrincipal);
 
                     const encodedPrincipal = btoa(JSON.stringify(clientPrincipal));
-                    fetch(API_BASE + '/syncUser', {
+                    const syncRes = await fetch(API_BASE + '/syncUser', {
                         headers: { 'x-ms-client-principal': encodedPrincipal }
                     });
+                    const syncData = await syncRes.json();
+                    if (syncData.user && syncData.user.following) myFollowing = syncData.user.following;
                 } else {
                     currentUser = null;
                     renderUnauthenticatedUI();
@@ -1795,7 +1813,7 @@
         }
 
         // -------------------------------------------------------------------------
-        // Profile Viewer & Follow Actions
+        // Profile Viewer & Smart Follow Actions
         // -------------------------------------------------------------------------
         async function openProfile(username) {
             if (!username) return;
@@ -1803,15 +1821,40 @@
             document.getElementById('calendarView').style.display = 'none';
             document.getElementById('watchlistView').style.display = 'none';
             document.getElementById('recapView').style.display = 'none';
+            document.getElementById('settingsView').style.display = 'none';
 
             const profileView = document.getElementById('profileView');
             profileView.style.display = 'block';
             document.getElementById('profileUsernameDisplay').innerText = username;
 
             const grid = document.getElementById('profileGrid');
-            grid.innerHTML = '<div style="color:var(--text-muted); padding:20px;">Loading logs...</div>';
+            const followBtn = document.getElementById('profileFollowBtn');
+            grid.innerHTML = '<div style="color:var(--text-muted); padding:20px;">Loading profile...</div>';
+            followBtn.style.display = 'none'; // Hide until we verify who they are
 
             try {
+                // 1. Fetch their secure Profile ID for the Smart Follow Button
+                const profRes = await fetch(`${API_BASE}/getUserProfile?username=${username}`);
+                if (profRes.ok) {
+                    const targetProfile = await profRes.json();
+
+                    if (targetProfile.id === currentUserId) {
+                        followBtn.style.display = 'none'; // Don't show follow button on your own profile
+                    } else {
+                        followBtn.style.display = 'block';
+                        followBtn.onclick = () => executeFollowToggle(targetProfile.id, followBtn);
+
+                        if (myFollowing.includes(targetProfile.id)) {
+                            followBtn.innerText = 'Following';
+                            followBtn.classList.add('active-following');
+                        } else {
+                            followBtn.innerText = 'Follow';
+                            followBtn.classList.remove('active-following');
+                        }
+                    }
+                }
+
+                // 2. Fetch their Movie Logs
                 const res = await fetch(`${API_BASE}/getUserLogs?username=${username}`);
                 const logs = await res.json();
 
@@ -1830,7 +1873,7 @@
                     grid.innerHTML += `<img class="grid-item" src="${posterSrc}" alt="${escapeHtml(title)}" style="cursor:pointer;" onclick="showFilmDetails('${item.filmId}', '${escapeHtml(title)}', '${posterSrc}')" onerror="this.src='https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster'">`;
                 });
             } catch (err) {
-                grid.innerHTML = '<div style="color:#f87171;">Error loading logs.</div>';
+                grid.innerHTML = '<div style="color:#f87171;">Error loading profile.</div>';
             }
         }
 
@@ -1847,24 +1890,26 @@
             const isFollowing = btnElement.innerText === 'Following';
             const action = isFollowing ? 'unfollow' : 'follow';
 
+            // Optimistic UI Update
             btnElement.innerText = isFollowing ? 'Follow' : 'Following';
             btnElement.classList.toggle('active-following');
+
+            // Update local array instantly
+            if (action === 'follow') myFollowing.push(targetUserId);
+            else myFollowing = myFollowing.filter(id => id !== targetUserId);
 
             try {
                 const response = await fetch('/.auth/me');
                 const payload = await response.json();
                 const encodedPrincipal = btoa(JSON.stringify(payload.clientPrincipal));
 
-                const res = await fetch(API_BASE + '/toggleFollow', {
+                await fetch(API_BASE + '/toggleFollow', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'x-ms-client-principal': encodedPrincipal
-                    },
+                    headers: { 'Content-Type': 'application/json', 'x-ms-client-principal': encodedPrincipal },
                     body: JSON.stringify({ targetUserId: targetUserId, action: action })
                 });
-                if (!res.ok) throw new Error("Failed backend sync");
             } catch (err) {
+                // Revert if failed
                 btnElement.innerText = isFollowing ? 'Following' : 'Follow';
                 btnElement.classList.toggle('active-following');
             }
@@ -1883,6 +1928,7 @@
             document.getElementById('calendarView').style.display = tabName === 'calendar' ? 'block' : 'none';
             document.getElementById('watchlistView').style.display = tabName === 'watchlist' ? 'block' : 'none';
             document.getElementById('recapView').style.display = tabName === 'recap' ? 'block' : 'none';
+            document.getElementById('settingsView').style.display = tabName === 'settings' ? 'block' : 'none';
 
             document.getElementById('profileView').style.display = 'none';
             if (document.getElementById('loggerCard')) document.getElementById('loggerCard').style.display = tabName === 'feed' ? 'block' : 'none';
@@ -1890,6 +1936,27 @@
             if (tabName === 'calendar') loadCalendar();
             if (tabName === 'watchlist') loadWatchlist();
             if (tabName === 'recap') loadRecapStatus();
+        }
+
+        // Nuke Data Trigger
+        async function nukeMyData() {
+            if (!confirm("WARNING: Are you absolutely sure you want to permanently delete all your data?")) return;
+
+            try {
+                const response = await fetch('/.auth/me');
+                const payload = await response.json();
+                const encodedPrincipal = btoa(JSON.stringify(payload.clientPrincipal));
+
+                await fetch(API_BASE + '/deleteUserData', {
+                    method: 'DELETE',
+                    headers: { 'x-ms-client-principal': encodedPrincipal }
+                });
+
+                alert("Data nuked. Logging you out.");
+                window.location.href = '/.auth/logout';
+            } catch (e) {
+                alert("Error deleting data.");
+            }
         }
 
         // -------------------------------------------------------------------------
