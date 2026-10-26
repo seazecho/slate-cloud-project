@@ -876,4 +876,106 @@ app.http('getNetworkProfiles', {
       return { status: 500, jsonBody: { error: 'Failed to fetch network profiles.' } };
     }
   }
-}); 
+});
+
+// -----------------------------------------------------------------------------
+// 19. toggleLike (HTTP POST)
+// -----------------------------------------------------------------------------
+app.http('toggleLike', {
+  methods: ['POST'],
+  authLevel: 'anonymous',
+  handler: async (request, context) => {
+    try {
+      const principalHeader = request.headers.get('x-ms-client-principal') || request.headers.get('X-MS-CLIENT-PRINCIPAL');
+      if (!principalHeader) return { status: 401 };
+      const userId = JSON.parse(Buffer.from(principalHeader, 'base64').toString('utf8')).userId;
+
+      const body = await request.json();
+      const { logId, ownerId } = body;
+
+      const db = getCosmosDatabase();
+      const container = db.container('logs');
+
+      const { resource: log } = await container.item(logId, ownerId).read();
+      if (!log) return { status: 404, jsonBody: { error: 'Log not found' } };
+
+      let likes = log.likes || [];
+      const hasLiked = likes.includes(userId);
+
+      if (hasLiked) {
+        likes = likes.filter(id => id !== userId); // Unlike
+      } else {
+        likes.push(userId); // Like
+      }
+
+      log.likes = likes;
+      await container.items.upsert(log);
+
+      return { status: 200, jsonBody: { likes: likes.length, hasLiked: !hasLiked } };
+    } catch (err) {
+      return { status: 500, jsonBody: { error: 'Failed to toggle like' } };
+    }
+  }
+});
+
+// -----------------------------------------------------------------------------
+// 20. addComment (HTTP POST)
+// -----------------------------------------------------------------------------
+app.http('addComment', {
+  methods: ['POST'],
+  authLevel: 'anonymous',
+  handler: async (request, context) => {
+    try {
+      const principalHeader = request.headers.get('x-ms-client-principal') || request.headers.get('X-MS-CLIENT-PRINCIPAL');
+      if (!principalHeader) return { status: 401 };
+      const clientPrincipal = JSON.parse(Buffer.from(principalHeader, 'base64').toString('utf8'));
+
+      const body = await request.json();
+      const db = getCosmosDatabase();
+
+      // Auto-create comments container if it doesn't exist
+      await db.containers.createIfNotExists({ id: 'comments', partitionKey: '/logId' });
+
+      const newComment = {
+        id: randomUUID(),
+        logId: body.logId,
+        userId: clientPrincipal.userId,
+        username: clientPrincipal.userDetails || "User",
+        text: body.text,
+        createdAt: new Date().toISOString()
+      };
+
+      await db.container('comments').items.create(newComment);
+      return { status: 200, jsonBody: newComment };
+    } catch (err) {
+      return { status: 500, jsonBody: { error: 'Failed to add comment' } };
+    }
+  }
+});
+
+// -----------------------------------------------------------------------------
+// 21. getComments (HTTP GET)
+// -----------------------------------------------------------------------------
+app.http('getComments', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  handler: async (request, context) => {
+    try {
+      const logId = request.query.get('logId');
+      const db = getCosmosDatabase();
+
+      try {
+        const { resources } = await db.container('comments').items.query({
+          query: `SELECT * FROM c WHERE c.logId = @lid ORDER BY c.createdAt ASC`,
+          parameters: [{ name: '@lid', value: logId }]
+        }).fetchAll();
+        return { status: 200, jsonBody: resources };
+      } catch (e) {
+        // Container might not exist yet
+        return { status: 200, jsonBody: [] };
+      }
+    } catch (err) {
+      return { status: 500, jsonBody: { error: 'Failed to fetch comments' } };
+    }
+  }
+});

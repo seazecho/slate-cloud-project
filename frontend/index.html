@@ -1773,13 +1773,7 @@
         }
 
         // -------------------------------------------------------------------------
-        // Side-by-Side Feed Generator (Sorts by Logged Date)
-        // -------------------------------------------------------------------------
-        // -------------------------------------------------------------------------
-        // Side-by-Side Feed Generator (With Delete Button)
-        // -------------------------------------------------------------------------
-        // -------------------------------------------------------------------------
-        // Side-by-Side Feed Generator (With Private Notes & Read More)
+        // Side-by-Side Feed Generator (With Likes & Real Comments)
         // -------------------------------------------------------------------------
         function createInstaCardElement(item) {
             const card = document.createElement('article');
@@ -1799,7 +1793,6 @@
 
             const starsHtml = item.rating ? buildStarDisplay(item.rating) : '';
 
-            // Text Clamping & Read More Logic
             let reviewHtml = '';
             if (item.review) {
                 const isLong = item.review.length > 200;
@@ -1809,10 +1802,15 @@
                 `;
             }
 
-            // Private Note Injection (Matching GUIDs)
             const isOwner = (item.userId === currentUserId || item.ownerId === currentUserId);
             const privateNoteHtml = (isOwner && item.privateNote) ? `<div class="private-note-display">🔒 <b>Private:</b> ${escapeHtml(item.privateNote)}</div>` : '';
             const deleteBtnHtml = isOwner ? `<button onclick="deleteMyLog('${item.id}', this)" style="background:transparent; border:none; cursor:pointer; font-size:16px; opacity:0.6; margin-left:auto;" title="Delete Log">🗑️</button>` : '';
+
+            // Like Logic
+            const likesArray = item.likes || [];
+            const hasLiked = currentUserId ? likesArray.includes(currentUserId) : false;
+            const likeColor = hasLiked ? '#ef4444' : 'var(--text-primary)';
+            const heartIcon = hasLiked ? '❤️' : '🤍';
 
             card.innerHTML = `
                 <div class="insta-media-left">
@@ -1827,18 +1825,32 @@
                         </div>
                         ${deleteBtnHtml}
                     </div>
+                    
                     <div class="insta-body">
                         <div style="font-size:18px; font-weight:700; color: var(--text-primary); margin-bottom: 4px;">${escapeHtml(title)} ${year}</div>
                         ${starsHtml}
                         ${reviewHtml}
                         ${privateNoteHtml}
-                    </div>
-                    <div class="insta-footer">
-                        <div style="color: var(--text-muted); font-size: 12px; margin-bottom: 8px;">View Comments...</div>
-                        <div style="display: flex; gap: 8px;">
-                            <input type="text" placeholder="Add a comment..." style="flex-grow: 1; background: var(--surface-alt); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 99px; padding: 8px 12px; outline: none; font-size: 13px;">
-                            <button style="background: transparent; border: none; color: var(--accent-green); font-weight: 600; cursor: pointer; padding: 0 8px;">Post</button>
+                        
+                        <!-- Social Action Bar -->
+                        <div style="margin-top: 16px; display:flex; align-items:center; gap:16px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+                            <div style="display:flex; align-items:center; gap:6px; cursor:pointer;" onclick="toggleLike('${item.id}', '${item.ownerId}', this)">
+                                <span class="like-icon" style="font-size:18px;">${heartIcon}</span>
+                                <span class="like-count" style="font-size:13px; font-weight:600; color:${likeColor};">${likesArray.length}</span>
+                            </div>
                         </div>
+
+                        <!-- Real Comments Container -->
+                        <div id="comments-list-${item.id}" style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+                            <div style="font-size:12px; color:var(--text-muted);">Loading comments...</div>
+                        </div>
+                    </div>
+
+                    <div class="insta-footer">
+                        <form onsubmit="postComment(event, '${item.id}')" style="display: flex; gap: 8px; width: 100%;">
+                            <input type="text" id="comment-input-${item.id}" placeholder="Add a comment..." required style="flex-grow: 1; background: var(--surface-alt); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 99px; padding: 8px 12px; outline: none; font-size: 13px;">
+                            <button type="submit" id="comment-btn-${item.id}" style="background: transparent; border: none; color: var(--accent-green); font-weight: 600; cursor: pointer; padding: 0 8px;">Post</button>
+                        </form>
                     </div>
                 </div>
             `;
@@ -1889,15 +1901,118 @@
                 feedList.innerHTML = '';
 
                 if (!items || items.length === 0) {
-                    feedList.innerHTML = `<div class="empty-feed-state">No films in the circle feed yet.</div>`;
+                    feedList.innerHTML = `<div class="empty-feed-state">No films in the circle feed yet. Search friends to follow!</div>`;
                     return;
                 }
 
-                // FORCE SORT: Logged date (createdAt), newest first
                 items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                items.forEach(item => feedList.appendChild(createInstaCardElement(item)));
+
+                // Append all cards, then trigger comment fetch for each
+                items.forEach(item => {
+                    feedList.appendChild(createInstaCardElement(item));
+                    fetchComments(item.id); // Fetch comments async in background
+                });
             } catch (error) {
                 if (document.getElementById('feedLoadingState')) document.getElementById('feedLoadingState').innerText = "Unable to connect to circle feed.";
+            }
+        }
+
+        // -------------------------------------------------------------------------
+        // Social Network Logic (Likes & Comments)
+        // -------------------------------------------------------------------------
+        async function toggleLike(logId, ownerId, btnElement) {
+            if (!currentUser) return alert("Log in to like posts.");
+
+            const icon = btnElement.querySelector('.like-icon');
+            const countSpan = btnElement.querySelector('.like-count');
+            let currentCount = parseInt(countSpan.innerText);
+            const isLiking = icon.innerText === '🤍';
+
+            // Optimistic UI update
+            icon.innerText = isLiking ? '❤️' : '🤍';
+            countSpan.style.color = isLiking ? '#ef4444' : 'var(--text-primary)';
+            countSpan.innerText = isLiking ? currentCount + 1 : currentCount - 1;
+
+            try {
+                const authRes = await fetch('/.auth/me');
+                const payload = await authRes.json();
+                const encodedPrincipal = btoa(JSON.stringify(payload.clientPrincipal));
+
+                await fetch(`${API_BASE}/toggleLike`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-ms-client-principal': encodedPrincipal },
+                    body: JSON.stringify({ logId, ownerId })
+                });
+            } catch (e) {
+                // Revert on failure
+                icon.innerText = isLiking ? '🤍' : '❤️';
+                countSpan.style.color = isLiking ? 'var(--text-primary)' : '#ef4444';
+                countSpan.innerText = currentCount;
+            }
+        }
+
+        async function fetchComments(logId) {
+            const list = document.getElementById(`comments-list-${logId}`);
+            try {
+                const res = await fetch(`${API_BASE}/getComments?logId=${logId}`);
+                const comments = await res.json();
+                list.innerHTML = '';
+
+                if (comments.length === 0) {
+                    list.innerHTML = ''; // Hide loading text
+                    return;
+                }
+
+                comments.forEach(c => {
+                    list.innerHTML += `
+                        <div style="font-size: 13px; line-height: 1.4; color: #d1d5db; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 6px;">
+                            <strong style="color: var(--text-primary); cursor:pointer;" onclick="openProfile('${escapeHtml(c.username)}')">${escapeHtml(c.username)}</strong>
+                            <span style="margin-left: 6px;">${escapeHtml(c.text)}</span>
+                        </div>
+                    `;
+                });
+
+                // Scroll to bottom of card body so newest comments are visible
+                const cardBody = list.closest('.insta-body');
+                if (cardBody) cardBody.scrollTop = cardBody.scrollHeight;
+            } catch (e) {
+                list.innerHTML = '<div style="font-size:12px; color:#ef4444;">Failed to load comments</div>';
+            }
+        }
+
+        async function postComment(event, logId) {
+            event.preventDefault();
+            if (!currentUser) return alert("Log in to comment.");
+
+            const input = document.getElementById(`comment-input-${logId}`);
+            const btn = document.getElementById(`comment-btn-${logId}`);
+            const text = input.value.trim();
+            if (!text) return;
+
+            input.disabled = true;
+            btn.innerText = '...';
+
+            try {
+                const authRes = await fetch('/.auth/me');
+                const payload = await authRes.json();
+                const encodedPrincipal = btoa(JSON.stringify(payload.clientPrincipal));
+
+                const res = await fetch(`${API_BASE}/addComment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-ms-client-principal': encodedPrincipal },
+                    body: JSON.stringify({ logId, text })
+                });
+
+                if (res.ok) {
+                    input.value = '';
+                    await fetchComments(logId); // Refresh the comment list
+                }
+            } catch (e) {
+                alert('Failed to post comment.');
+            } finally {
+                input.disabled = false;
+                btn.innerText = 'Post';
+                input.focus();
             }
         }
 
