@@ -158,16 +158,17 @@ app.http('log', {
 
       const logRecord = {
         id: body.id || randomUUID(),
-        userId: body.userId,       // FIX: Saves the GUID
-        username: body.username,   // FIX: Saves 'seazecho'
+        userId: body.userId,
+        username: body.username,
         filmId: body.filmId || null,
         filmTitle: body.filmTitle || body.title || null,
         year: body.year,
         posterPath: body.posterPath,
         rating: body.rating !== undefined ? body.rating : null,
         review: body.review || null,
-        privateNote: body.privateNote || null, // Saves the secret note
-        loggedAt: body.loggedAt || new Date().toISOString() // Saves chosen date
+        privateNote: body.privateNote || null,
+        loggedAt: body.loggedAt || new Date().toISOString(), // The date you said you watched it
+        createdAt: new Date().toISOString() // FIX: The exact millisecond you pressed "Log Film"
       };
 
       // 1. Save log record into Cosmos DB 'logs' container
@@ -264,7 +265,7 @@ app.storageQueue('feedWorker', {
 });
 
 // -----------------------------------------------------------------------------
-// 4. getFeed (HTTP GET) - REBUILT FOR SOCIAL GRAPH
+// 4. getFeed (HTTP GET) - REBUILT FOR SOCIAL GRAPH & SORTING
 // -----------------------------------------------------------------------------
 app.http('getFeed', {
   methods: ['GET'],
@@ -272,64 +273,41 @@ app.http('getFeed', {
   handler: async (request, context) => {
     try {
       const db = getCosmosDatabase();
-      const usersContainer = db.container('users');
-      const logsContainer = db.container('logs');
-
-      // 1. Identify the user asking for the feed
       const principalHeader = request.headers.get('x-ms-client-principal') || request.headers.get('X-MS-CLIENT-PRINCIPAL');
+      if (!principalHeader) return { status: 200, headers: { 'Content-Type': 'application/json' }, jsonBody: [] };
 
-      // If not logged in, return an empty feed rather than global feed
-      if (!principalHeader) {
-        return { status: 200, headers: { 'Content-Type': 'application/json' }, jsonBody: [] };
-      }
+      const currentUserId = JSON.parse(Buffer.from(principalHeader, 'base64').toString('utf8')).userId;
 
-      const decoded = Buffer.from(principalHeader, 'base64').toString('utf8');
-      const currentUserId = JSON.parse(decoded).userId;
-
-      // 2. Look up who they follow
       let followingIds = [];
       try {
-        const { resource: userProfile } = await usersContainer.item(currentUserId, currentUserId).read();
-        if (userProfile && Array.isArray(userProfile.following)) {
-          followingIds = userProfile.following;
-        }
-      } catch (err) {
-        context.log('User profile not found, defaulting to empty following list.');
-      }
-
-      // Add self to the feed so they see their own posts
+        const { resource: userProfile } = await db.container('users').item(currentUserId, currentUserId).read();
+        if (userProfile && Array.isArray(userProfile.following)) followingIds = userProfile.following;
+      } catch (err) { }
       followingIds.push(currentUserId);
 
-      // 3. Query the LOGS container (not the feed queue) for immediate, accurate data
-      // We construct a dynamic SQL query based on the following array
       const quotedIds = followingIds.map(id => `'${id}'`).join(',');
-      const querySpec = {
-        query: `SELECT TOP 20 * FROM c WHERE c.userId IN (${quotedIds}) ORDER BY c.loggedAt DESC`
-      };
+      const querySpec = { query: `SELECT * FROM c WHERE c.userId IN (${quotedIds})` };
+      const { resources: directLogs } = await db.container('logs').items.query(querySpec).fetchAll();
 
-      const { resources: directLogs } = await logsContainer.items.query(querySpec).fetchAll();
+      // FIX: Sort exactly by the moment they pressed "Log Film" (createdAt), newest first
+      directLogs.sort((a, b) => new Date(b.createdAt || b.loggedAt) - new Date(a.createdAt || a.loggedAt));
 
-      // 4. Map the raw logs into the exact format the frontend expects
-      // 4. Map the raw logs into the exact format the frontend expects
-      const formattedFeed = directLogs.map(log => ({
+      const formattedFeed = directLogs.slice(0, 50).map(log => ({
         id: log.id,
-        ownerId: log.username || log.userId, // FIX: Use the clean username
-        userId: log.username || log.userId,  // FIX: Use the clean username
+        ownerId: log.username || log.userId,
+        userId: log.username || log.userId,
+        filmId: log.filmId,
         filmTitle: log.filmTitle,
         year: log.year,
         posterPath: log.posterPath || log.thumbUrl,
         rating: log.rating,
         review: log.review,
-        createdAt: log.loggedAt
+        createdAt: log.createdAt || log.loggedAt, // Pass exact creation time
+        loggedAt: log.loggedAt // Pass watched time
       }));
 
-      return {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-        jsonBody: formattedFeed
-      };
+      return { status: 200, headers: { 'Content-Type': 'application/json' }, jsonBody: formattedFeed };
     } catch (err) {
-      context.error('Error fetching personalized feed:', err);
       return { status: 500, jsonBody: { error: 'Failed to retrieve personalized feed.' } };
     }
   }
@@ -509,15 +487,17 @@ app.http('getUserLogs', {
 
       const db = getCosmosDatabase();
       const querySpec = {
-        // FIX: Search by username, and make it case-insensitive
-        query: `SELECT * FROM c WHERE LOWER(c.username) = LOWER(@uname) ORDER BY c.loggedAt DESC`,
+        query: `SELECT * FROM c WHERE LOWER(c.username) = LOWER(@uname)`,
         parameters: [{ name: '@uname', value: username }]
       };
 
       const { resources } = await db.container('logs').items.query(querySpec).fetchAll();
+
+      // FIX: Sort exactly by the moment they pressed "Log Film"
+      resources.sort((a, b) => new Date(b.createdAt || b.loggedAt) - new Date(a.createdAt || a.loggedAt));
+
       return { status: 200, headers: { 'Content-Type': 'application/json' }, jsonBody: resources };
     } catch (err) {
-      context.error(err);
       return { status: 500, jsonBody: { error: 'Grid fetch failed' } };
     }
   }
@@ -691,48 +671,41 @@ app.storageQueue('processRecapWorker', {
   queueName: 'recap-requests',
   connection: 'AzureWebJobsStorage',
   handler: async (queueItem, context) => {
-    context.log('Queue trigger fired for recap:', queueItem);
     const { userId, month } = queueItem;
-
     try {
       const db = getCosmosDatabase();
-
-      // Read logs for that specific month
       const { resources: logs } = await db.container('logs').items.query({
         query: `SELECT * FROM c WHERE c.userId = @uid AND STARTSWITH(c.loggedAt, @month)`,
         parameters: [{ name: '@uid', value: userId }, { name: '@month', value: month }]
       }).fetchAll();
 
-      // Calculate heavy statistics
       const totalFilms = logs.length;
       let highestRatedFilm = "None";
       let maxRating = 0;
+      let sum = 0, count = 0;
 
       logs.forEach(log => {
-        if (log.rating && log.rating > maxRating) {
-          maxRating = log.rating;
-          highestRatedFilm = log.filmTitle;
+        if (log.rating) {
+          sum += parseFloat(log.rating);
+          count++;
+          if (log.rating > maxRating) {
+            maxRating = log.rating;
+            highestRatedFilm = log.filmTitle;
+          }
         }
       });
 
-      // Simulate heavy processing time (2 seconds) to prove the frontend doesn't block
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const avgRating = count > 0 ? (sum / count).toFixed(1) : "0.0";
 
-      // Save final aggregated JSON result to Cosmos DB
       const recapData = {
         id: `${userId}_${month}`,
-        userId,
-        month,
-        status: 'complete',
-        stats: { totalFilms, highestRatedFilm, maxRating },
+        userId, month, status: 'complete',
+        stats: { totalFilms, highestRatedFilm, maxRating, avgRating },
         generatedAt: new Date().toISOString()
       };
 
       await db.container('recaps').items.upsert(recapData);
-      context.log(`Successfully generated recap for ${userId}_${month}`);
-    } catch (err) {
-      context.error('Worker failed to generate recap:', err);
-    }
+    } catch (err) { }
   }
 });
 
@@ -774,8 +747,8 @@ app.http('getFilmDetails', {
       if (!filmId) return { status: 400, jsonBody: { error: "Film ID required" } };
 
       const apiKey = process.env.TMDB_API_KEY;
-      // Fetch movie details AND credits (cast/crew) in one single request
-      const url = `https://api.themoviedb.org/3/movie/${filmId}?api_key=${apiKey}&append_to_response=credits`;
+      // FIX: Append Reviews to the TMDB fetch
+      const url = `https://api.themoviedb.org/3/movie/${filmId}?api_key=${apiKey}&append_to_response=credits,reviews`;
 
       const response = await fetch(url);
       if (!response.ok) throw new Error("TMDB fetch failed");
@@ -783,7 +756,6 @@ app.http('getFilmDetails', {
       const data = await response.json();
       return { status: 200, headers: { 'Content-Type': 'application/json' }, jsonBody: data };
     } catch (err) {
-      context.error(err);
       return { status: 500, jsonBody: { error: 'Failed to fetch film details' } };
     }
   }
