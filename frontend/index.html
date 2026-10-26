@@ -1226,6 +1226,28 @@
                 }
 
                 /* Upgraded Calendar Grid */
+                .calendar-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 16px;
+                }
+
+                .calendar-grid {
+                    display: grid;
+                    grid-template-columns: repeat(7, 1fr);
+                    gap: 6px;
+                }
+
+                .calendar-day-header {
+                    text-align: center;
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: var(--text-muted);
+                    text-transform: uppercase;
+                    margin-bottom: 8px;
+                }
+
                 .calendar-cell {
                     aspect-ratio: 1;
                     background: var(--surface-color);
