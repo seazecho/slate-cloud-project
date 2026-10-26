@@ -263,7 +263,6 @@ app.storageQueue('feedWorker', {
     }
   }
 });
-
 // -----------------------------------------------------------------------------
 // 4. getFeed (HTTP GET) - REBUILT FOR SOCIAL GRAPH & SORTING
 // -----------------------------------------------------------------------------
@@ -289,22 +288,21 @@ app.http('getFeed', {
       const querySpec = { query: `SELECT * FROM c WHERE c.userId IN (${quotedIds})` };
       const { resources: directLogs } = await db.container('logs').items.query(querySpec).fetchAll();
 
-      // FIX: Sort exactly by the moment they pressed "Log Film" (createdAt), newest first
       directLogs.sort((a, b) => new Date(b.createdAt || b.loggedAt) - new Date(a.createdAt || a.loggedAt));
 
-      // 4. Map the raw logs into the exact format the frontend expects
       const formattedFeed = directLogs.slice(0, 50).map(log => ({
         id: log.id,
-        ownerId: log.userId, // FIX: Keep the GUID for security checks
-        userId: log.userId,  // FIX: Keep the GUID for Private Note checks
-        username: log.username, // Explicitly pass the display name
+        ownerId: log.userId, // CRITICAL FIX: Keeps your GUID for the Private Note check
+        userId: log.userId,  // CRITICAL FIX: Keeps your GUID for the Delete Button check
+        username: log.username,
         filmId: log.filmId,
         filmTitle: log.filmTitle,
         year: log.year,
         posterPath: log.posterPath || log.thumbUrl,
         rating: log.rating,
         review: log.review,
-        privateNote: log.privateNote, // FIX: Actually pass the private note to the frontend!
+        privateNote: log.privateNote, // CRITICAL FIX: Actually sends the note to the frontend
+        likes: log.likes || [],
         createdAt: log.createdAt || log.loggedAt,
         loggedAt: log.loggedAt
       }));
@@ -666,7 +664,6 @@ app.http('requestRecap', {
     }
   }
 });
-
 // -----------------------------------------------------------------------------
 // 12. processRecapWorker (QUEUE TRIGGER -> Heavy Compute Offload)
 // -----------------------------------------------------------------------------
@@ -686,6 +683,9 @@ app.storageQueue('processRecapWorker', {
       let highestRatedFilm = "None";
       let maxRating = 0;
       let sum = 0, count = 0;
+      let reviewsWritten = 0;
+      let oldestYear = 9999;
+      let oldestFilm = "N/A";
 
       logs.forEach(log => {
         if (log.rating) {
@@ -696,14 +696,22 @@ app.storageQueue('processRecapWorker', {
             highestRatedFilm = log.filmTitle;
           }
         }
+        if (log.review && log.review.trim() !== '') reviewsWritten++;
+
+        const y = parseInt(log.year);
+        if (y && y < oldestYear) {
+          oldestYear = y;
+          oldestFilm = log.filmTitle;
+        }
       });
 
       const avgRating = count > 0 ? (sum / count).toFixed(1) : "0.0";
+      if (oldestYear === 9999) oldestFilm = "None";
 
       const recapData = {
         id: `${userId}_${month}`,
         userId, month, status: 'complete',
-        stats: { totalFilms, highestRatedFilm, maxRating, avgRating },
+        stats: { totalFilms, highestRatedFilm, maxRating, avgRating, reviewsWritten, oldestFilm, oldestYear },
         generatedAt: new Date().toISOString()
       };
 
@@ -976,6 +984,37 @@ app.http('getComments', {
       }
     } catch (err) {
       return { status: 500, jsonBody: { error: 'Failed to fetch comments' } };
+    }
+  }
+});
+// -----------------------------------------------------------------------------
+// 22. getUserWatchlist (HTTP GET)
+// -----------------------------------------------------------------------------
+app.http('getUserWatchlist', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  handler: async (request, context) => {
+    try {
+      const username = request.query.get('username');
+      if (!username) return { status: 400, jsonBody: { error: 'Username required' } };
+
+      const db = getCosmosDatabase();
+      const { resources: users } = await db.container('users').items.query({
+        query: `SELECT * FROM c WHERE LOWER(c.username) = LOWER(@uname)`,
+        parameters: [{ name: '@uname', value: username }]
+      }).fetchAll();
+
+      if (users.length === 0) return { status: 404, jsonBody: { error: 'User not found' } };
+      const targetUserId = users[0].id;
+
+      const { resources } = await db.container('watchlist').items.query({
+        query: 'SELECT * FROM c WHERE c.userId = @uid ORDER BY c.addedAt DESC',
+        parameters: [{ name: '@uid', value: targetUserId }]
+      }).fetchAll();
+
+      return { status: 200, jsonBody: resources };
+    } catch (err) {
+      return { status: 500, jsonBody: { error: 'Failed to fetch watchlist' } };
     }
   }
 });

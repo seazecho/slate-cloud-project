@@ -1199,14 +1199,12 @@
         </section>
 
         <!-- User Profile View -->
-        <!-- User Profile View -->
         <section id="profileView" class="profile-view">
             <button class="btn-back" onclick="closeProfile()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="19" y1="12" x2="5" y2="12"></line>
                     <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
-                Back to Feed
+                </svg> Back to Feed
             </button>
             <div class="profile-header-top" style="margin-top: 16px;">
                 <div class="profile-user-info">
@@ -1216,8 +1214,13 @@
                 <button id="profileFollowBtn" class="btn-follow">Follow</button>
             </div>
 
+            <!-- The New Profile Tabs -->
+            <div class="modal-tabs" style="margin-top: 20px;">
+                <span class="modal-tab active" id="prof-btn-logs" onclick="switchProfileTab('logs')">Diary Logs</span>
+                <span class="modal-tab" id="prof-btn-watchlist" onclick="switchProfileTab('watchlist')">Watchlist</span>
+            </div>
+
             <style>
-                /* Fixed Profile Grid - Stops single posters from stretching */
                 .profile-grid {
                     display: grid;
                     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -1227,7 +1230,6 @@
                     border-top: 1px solid var(--border-color);
                 }
 
-                /* Watchlist Card Styling */
                 .watchlist-card {
                     display: flex;
                     flex-direction: column;
@@ -1246,7 +1248,6 @@
                     color: var(--text-muted);
                 }
 
-                /* Upgraded Calendar Grid */
                 .calendar-header {
                     display: flex;
                     justify-content: space-between;
@@ -1294,7 +1295,6 @@
                     z-index: 2;
                 }
 
-                /* Evenly distributes up to 4 posters in a 2x2 grid */
                 .calendar-posters {
                     display: flex;
                     flex-wrap: wrap;
@@ -1303,21 +1303,20 @@
                     flex-grow: 1;
                     z-index: 1;
                     overflow: hidden;
-                    /* Stop spillover */
+                    justify-content: center;
                 }
 
+                /* FIX: Corrected the calc syntax here */
                 .calendar-mini-poster {
-                    width: calc(50% - 1px);
-                    /* Exactly half width minus gap */
-                    height: auto;
+                    flex: 1;
+                    max-width: 50%;
+                    height: 100%;
                     aspect-ratio: 2/3;
                     object-fit: contain !important;
-                    /* NEVER CROP */
-                    border-radius: 2px;
+                    border-radius: 4px;
                     background: #141414;
                 }
 
-                /* Upgraded Star Display */
                 .insta-stars {
                     color: var(--accent-gold);
                     font-size: 16px;
@@ -1336,7 +1335,11 @@
                 }
             </style>
 
-            <div id="profileGrid" class="profile-grid"></div>
+            <!-- Profile Logs are rendered as full Feed Cards here -->
+            <div id="profileGrid" style="display:flex; flex-direction:column; gap:20px; margin-top: 20px;"></div>
+
+            <!-- Profile Watchlist is rendered as a grid here -->
+            <div id="profileWatchlistGrid" class="profile-grid" style="display:none;"></div>
         </section>
 
 
@@ -2016,29 +2019,32 @@
             }
         }
 
-        // -------------------------------------------------------------------------
-        // Profile Viewer & Smart Follow Actions
-        // -------------------------------------------------------------------------
-        // Fix Fake User & Profile View
         async function openProfile(username) {
             if (!username) return;
-            switchTab('none'); // Hide all tabs
+            switchTab('none');
 
             const profileView = document.getElementById('profileView');
             profileView.style.display = 'block';
             document.getElementById('profileUsernameDisplay').innerText = username;
+            document.getElementById('profileAvatarLg').innerText = username.charAt(0).toUpperCase();
 
-            const grid = document.getElementById('profileGrid');
+            const logsContainer = document.getElementById('profileGrid');
+            const watchlistContainer = document.getElementById('profileWatchlistGrid');
             const followBtn = document.getElementById('profileFollowBtn');
-            grid.innerHTML = '<div style="color:var(--text-muted); padding:20px;">Loading profile...</div>';
+
+            logsContainer.innerHTML = '<div style="color:var(--text-muted); padding:20px;">Loading profile...</div>';
+            watchlistContainer.innerHTML = '<div style="color:var(--text-muted); padding:20px;">Loading watchlist...</div>';
             followBtn.style.display = 'none';
 
+            switchProfileTab('logs'); // Reset to logs tab by default
+
             try {
-                // 1. Check if user exists BEFORE doing anything else
+                // 1. Verify user exists
                 const profRes = await fetch(`${API_BASE}/getUserProfile?username=${username}`);
                 if (!profRes.ok) {
-                    grid.innerHTML = `<div style="color:#ef4444; padding:20px;">User '${escapeHtml(username)}' does not exist.</div>`;
-                    return; // STOP execution
+                    logsContainer.innerHTML = `<div style="color:#ef4444; padding:20px;">User '${escapeHtml(username)}' does not exist.</div>`;
+                    watchlistContainer.innerHTML = '';
+                    return;
                 }
 
                 const targetProfile = await profRes.json();
@@ -2054,32 +2060,47 @@
                     }
                 }
 
-                // 2. Fetch Logs
-                const res = await fetch(`${API_BASE}/getUserLogs?username=${username}`);
-                const logs = await res.json();
-                grid.innerHTML = '';
+                // 2. Fetch & Render their Logs as FULL Feed Cards
+                const resLogs = await fetch(`${API_BASE}/getUserLogs?username=${username}`);
+                const logs = await resLogs.json();
+                logsContainer.innerHTML = '';
+
                 if (!logs || logs.length === 0) {
-                    grid.innerHTML = '<div style="color:var(--text-muted); padding:20px;">No films logged yet.</div>';
-                    return;
+                    logsContainer.innerHTML = '<div style="color:var(--text-muted); padding:20px;">No films logged yet.</div>';
+                } else {
+                    logs.forEach(item => {
+                        logsContainer.appendChild(createInstaCardElement(item));
+                        fetchComments(item.id); // Fetch comments for profile cards too!
+                    });
                 }
 
-                logs.forEach(item => {
-                    let posterSrc = item.posterPath || item.thumbUrl || '';
-                    if (posterSrc && !posterSrc.startsWith('http')) posterSrc = `https://image.tmdb.org/t/p/w500${posterSrc}`;
-                    if (!posterSrc) posterSrc = 'https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster';
+                // 3. Fetch & Render their Watchlist as a Grid
+                const resWatch = await fetch(`${API_BASE}/getUserWatchlist?username=${username}`);
+                const watchItems = await resWatch.json();
+                watchlistContainer.innerHTML = '';
 
-                    const title = item.filmTitle || item.title || "Unknown";
-                    const yearStr = item.year ? `(${item.year})` : '';
+                if (!watchItems || watchItems.length === 0) {
+                    watchlistContainer.innerHTML = '<div style="color:var(--text-muted); padding:20px; grid-column: 1/-1;">Watchlist is empty.</div>';
+                } else {
+                    watchItems.forEach(item => {
+                        let posterSrc = item.posterPath || '';
+                        if (posterSrc && !posterSrc.startsWith('http')) posterSrc = `https://image.tmdb.org/t/p/w500${posterSrc}`;
+                        if (!posterSrc) posterSrc = 'https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster';
+                        const title = item.title || "Unknown";
+                        const yearStr = item.year ? `(${item.year})` : '';
+                        const addedDate = item.addedAt ? new Date(item.addedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown Date';
 
-                    grid.innerHTML += `
-                        <div class="watchlist-card">
-                            <img class="grid-item" src="${posterSrc}" alt="${escapeHtml(title)}" style="cursor:pointer;" onclick="showFilmDetails('${item.filmId}', '${escapeHtml(title)}', '${posterSrc}')" onerror="this.src='https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster'">
-                            <div class="watchlist-title">${escapeHtml(title)} ${yearStr}</div>
-                        </div>
-                    `;
-                });
+                        watchlistContainer.innerHTML += `
+                            <div class="watchlist-card">
+                                <img class="grid-item" src="${posterSrc}" alt="${escapeHtml(title)}" style="cursor:pointer;" onclick="showFilmDetails('${item.filmId}', '${escapeHtml(title)}', '${posterSrc}')" onerror="this.src='https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster'">
+                                <div class="watchlist-title">${escapeHtml(title)} ${yearStr}</div>
+                                <div class="watchlist-meta">Added ${addedDate}</div>
+                            </div>
+                        `;
+                    });
+                }
             } catch (err) {
-                grid.innerHTML = '<div style="color:#f87171;">Error loading profile.</div>';
+                logsContainer.innerHTML = '<div style="color:#f87171;">Error loading profile.</div>';
             }
         }
 
@@ -2343,7 +2364,9 @@
             document.getElementById('calendarDayModal').style.display = 'flex';
         }
 
-        // Fix Recap Stats Display
+        // -------------------------------------------------------------------------
+        // Upgraded Rich Recap
+        // -------------------------------------------------------------------------
         async function loadRecapStatus() {
             const content = document.getElementById('recapContent');
             const month = "2026-10";
@@ -2359,16 +2382,39 @@
                 const data = await res.json();
 
                 if (data.status === 'pending') {
-                    content.innerHTML = `<div style="color: var(--accent-gold); font-weight: 500;">Queue worker is processing... (Polling)</div>`;
+                    content.innerHTML = `<div style="color: var(--accent-gold); font-weight: 500;">Worker is processing billions of pixels... (Polling)</div>`;
                     setTimeout(loadRecapStatus, 3000);
                 } else if (data.status === 'complete') {
+                    // Upgraded Rich UI for the Recap output
                     content.innerHTML = `
-                        <div style="background: var(--surface-alt); border: 1px solid var(--accent-green); padding: 20px; border-radius: 8px; text-align:left;">
-                            <h2 style="color: var(--accent-green); margin-bottom: 16px;">Monthly Stats</h2>
-                            <p style="margin-bottom: 8px; color:var(--text-primary);">Films Watched: <strong>${data.stats.totalFilms}</strong></p>
-                            <p style="margin-bottom: 8px; color:var(--text-primary);">Average Rating: <strong>${data.stats.avgRating} ★</strong></p>
-                            <p style="color:var(--text-primary);">Highest Rated: <strong>${escapeHtml(data.stats.highestRatedFilm)}</strong> (${data.stats.maxRating} ★)</p>
-                            <button class="btn-cancel" style="margin-top: 20px; border: 1px solid var(--border-color); width: 100%;" onclick="requestMonthlyRecap()">Regenerate Recap</button>
+                        <div style="background: var(--surface-alt); border: 1px solid var(--accent-green); padding: 24px; border-radius: 12px; text-align:left; box-shadow: 0 4px 20px rgba(74, 222, 128, 0.1);">
+                            <h2 style="color: var(--accent-green); margin-bottom: 20px; font-size:22px; border-bottom:1px solid rgba(74,222,128,0.2); padding-bottom:10px;">Your Cinematic Month</h2>
+                            
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div>
+                                    <div style="color:var(--text-muted); font-size:12px; text-transform:uppercase; font-weight:600; letter-spacing:1px;">Films Watched</div>
+                                    <div style="font-size:24px; font-weight:700; color:var(--text-primary);">${data.stats.totalFilms}</div>
+                                </div>
+                                <div>
+                                    <div style="color:var(--text-muted); font-size:12px; text-transform:uppercase; font-weight:600; letter-spacing:1px;">Average Rating</div>
+                                    <div style="font-size:24px; font-weight:700; color:var(--accent-gold);">${data.stats.avgRating} ★</div>
+                                </div>
+                                <div>
+                                    <div style="color:var(--text-muted); font-size:12px; text-transform:uppercase; font-weight:600; letter-spacing:1px;">Reviews Written</div>
+                                    <div style="font-size:18px; font-weight:700; color:var(--text-primary);">${data.stats.reviewsWritten || 0}</div>
+                                </div>
+                                <div>
+                                    <div style="color:var(--text-muted); font-size:12px; text-transform:uppercase; font-weight:600; letter-spacing:1px;">Oldest Film</div>
+                                    <div style="font-size:16px; font-weight:700; color:var(--text-primary);">${escapeHtml(data.stats.oldestFilm || 'N/A')} <span style="font-weight:400; font-size:14px; color:var(--text-muted);">(${data.stats.oldestYear || 'N/A'})</span></div>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--border-color);">
+                                <div style="color:var(--text-muted); font-size:12px; text-transform:uppercase; font-weight:600; letter-spacing:1px;">Crown Jewel (Highest Rated)</div>
+                                <div style="font-size:18px; font-weight:700; color:var(--text-primary); margin-top:4px;">${escapeHtml(data.stats.highestRatedFilm)} <span style="color:var(--accent-gold); font-size:16px;">(${data.stats.maxRating} ★)</span></div>
+                            </div>
+
+                            <button class="btn-cancel" style="margin-top: 24px; border: 1px solid var(--border-color); width: 100%; background:var(--surface-color);" onclick="requestMonthlyRecap()">Recalculate Stats</button>
                         </div>
                     `;
                 }
