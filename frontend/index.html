@@ -11,54 +11,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* -------------------------------------------------------------------------
-           Friend Search Bar UI
-        -------------------------------------------------------------------------- */
-        .friend-search-bar {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 24px;
-            background: var(--surface-color);
-            padding: 16px;
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-card);
-        }
-
-        .friend-search-input {
-            flex-grow: 1;
-            background: var(--surface-alt);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 10px 14px;
-            color: var(--text-primary);
-            outline: none;
-            font-size: 14px;
-            transition: border-color 0.2s;
-        }
-
-        .friend-search-input:focus {
-            border-color: var(--accent-green);
-        }
-
-        .btn-search {
-            background: var(--surface-alt);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-            padding: 10px 20px;
-            border-radius: var(--radius-md);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-search:hover {
-            background: #374151;
-            border-color: var(--border-focus);
-        }
-
         /* Review Clamp */
         .review-clamp {
             display: -webkit-box;
@@ -572,6 +524,7 @@
 
         .grid-item {
             width: 100%;
+            height: auto;
             aspect-ratio: 2 / 3 !important;
             object-fit: contain !important;
             border-radius: 6px;
@@ -1397,8 +1350,7 @@
                 <input type="text" id="friendSearchInput" class="friend-search-input"
                     placeholder="Find friends by username...">
                 <button class="btn-search"
-                    onclick="openProfile(document.getElementById('friendSearchInput').value.trim())">Search
-                    User</button>
+                    onclick="openProfile(document.getElementById('friendSearchInput').value.trim())">Search</button>
             </div>
             <div id="feedList">
                 <div class="empty-feed-state" id="feedLoadingState">Loading circle feed...</div>
@@ -2088,28 +2040,24 @@
 
             try {
                 // 1. Verify user exists
-                let targetUserId = null;
                 const profRes = await fetch(`${API_BASE}/getUserProfile?username=${username}`);
-                if (profRes.ok) {
-                    const targetProfile = await profRes.json();
-                    targetUserId = targetProfile.id;
+                if (!profRes.ok) {
+                    logsContainer.innerHTML = `<div style="color:#ef4444; padding:20px;">User '${escapeHtml(username)}' does not exist.</div>`;
+                    watchlistContainer.innerHTML = '';
+                    return;
+                }
 
-                    if (targetProfile.id === currentUserId) {
-                        followBtn.style.display = 'none';
-                    } else {
-                        followBtn.style.display = 'block';
-                        followBtn.onclick = () => executeFollowToggle(targetProfile.id, followBtn);
-
-                        const safeFollowingList = Array.isArray(myFollowing) ? myFollowing : [];
-                        if (safeFollowingList.includes(targetProfile.id)) {
-                            followBtn.innerText = 'Following'; followBtn.style.background = 'var(--text-primary)'; followBtn.style.color = '#000';
-                        } else {
-                            followBtn.innerText = 'Follow'; followBtn.style.background = 'var(--surface-alt)'; followBtn.style.color = 'var(--text-primary)';
-                        }
-                    }
-                } else {
-                    // Even if profile isn't fully initialized, they might have logs. Keep going, but hide follow.
+                const targetProfile = await profRes.json();
+                if (targetProfile.id === currentUserId) {
                     followBtn.style.display = 'none';
+                } else {
+                    followBtn.style.display = 'block';
+                    followBtn.onclick = () => executeFollowToggle(targetProfile.id, followBtn);
+                    if (myFollowing.includes(targetProfile.id)) {
+                        followBtn.innerText = 'Following'; followBtn.classList.add('active-following');
+                    } else {
+                        followBtn.innerText = 'Follow'; followBtn.classList.remove('active-following');
+                    }
                 }
 
                 // 2. Fetch & Render their Logs as FULL Feed Cards
@@ -2122,46 +2070,37 @@
                 } else {
                     logs.forEach(item => {
                         logsContainer.appendChild(createInstaCardElement(item));
-                        fetchComments(item.id);
+                        fetchComments(item.id); // Fetch comments for profile cards too!
                     });
                 }
 
-                // 3. Fetch & Render their Watchlist as a Grid (Only if we found their ID)
+                // 3. Fetch & Render their Watchlist as a Grid
+                const resWatch = await fetch(`${API_BASE}/getUserWatchlist?username=${username}`);
+                const watchItems = await resWatch.json();
                 watchlistContainer.innerHTML = '';
-                if (!targetUserId) {
-                    watchlistContainer.innerHTML = '<div style="color:var(--text-muted); padding:20px; grid-column: 1/-1;">User has not set up their profile yet.</div>';
+
+                if (!watchItems || watchItems.length === 0) {
+                    watchlistContainer.innerHTML = '<div style="color:var(--text-muted); padding:20px; grid-column: 1/-1;">Watchlist is empty.</div>';
                 } else {
-                    const resWatch = await fetch(`${API_BASE}/getUserWatchlist?username=${username}`);
+                    watchItems.forEach(item => {
+                        let posterSrc = item.posterPath || '';
+                        if (posterSrc && !posterSrc.startsWith('http')) posterSrc = `https://image.tmdb.org/t/p/w500${posterSrc}`;
+                        if (!posterSrc) posterSrc = 'https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster';
+                        const title = item.title || "Unknown";
+                        const yearStr = item.year ? `(${item.year})` : '';
+                        const addedDate = item.addedAt ? new Date(item.addedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown Date';
 
-                    if (!resWatch.ok) {
-                        watchlistContainer.innerHTML = '<div style="color:var(--text-muted); padding:20px; grid-column: 1/-1;">Could not load watchlist.</div>';
-                    } else {
-                        const watchItems = await resWatch.json();
-                        if (!watchItems || watchItems.length === 0) {
-                            watchlistContainer.innerHTML = '<div style="color:var(--text-muted); padding:20px; grid-column: 1/-1;">Watchlist is empty.</div>';
-                        } else {
-                            watchItems.forEach(item => {
-                                let posterSrc = item.posterPath || '';
-                                if (posterSrc && !posterSrc.startsWith('http')) posterSrc = `https://image.tmdb.org/t/p/w500${posterSrc}`;
-                                if (!posterSrc) posterSrc = 'https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster';
-                                const title = item.title || "Unknown";
-                                const yearStr = item.year ? `(${item.year})` : '';
-                                const addedDate = item.addedAt ? new Date(item.addedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown Date';
-
-                                watchlistContainer.innerHTML += `
-                                    <div class="watchlist-card" style="z-index: 10;">
-                                        <img class="grid-item" src="${posterSrc}" alt="${escapeHtml(title)}" style="cursor:pointer; position: relative; z-index: 20;" onclick="showFilmDetails('${item.filmId}', '${escapeHtml(title)}', '${posterSrc}')" onerror="this.src='https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster'">
-                                        <div class="watchlist-title">${escapeHtml(title)} ${yearStr}</div>
-                                        <div class="watchlist-meta">Added ${addedDate}</div>
-                                    </div>
-                                `;
-                            });
-                        }
-                    }
+                        watchlistContainer.innerHTML += `
+                            <div class="watchlist-card">
+                                <img class="grid-item" src="${posterSrc}" alt="${escapeHtml(title)}" style="cursor:pointer;" onclick="showFilmDetails('${item.filmId}', '${escapeHtml(title)}', '${posterSrc}')" onerror="this.src='https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster'">
+                                <div class="watchlist-title">${escapeHtml(title)} ${yearStr}</div>
+                                <div class="watchlist-meta">Added ${addedDate}</div>
+                            </div>
+                        `;
+                    });
                 }
             } catch (err) {
-                logsContainer.innerHTML = '<div style="color:#f87171; padding:20px;">Error loading profile data.</div>';
-                watchlistContainer.innerHTML = '';
+                logsContainer.innerHTML = '<div style="color:#f87171;">Error loading profile.</div>';
             }
         }
 
@@ -2313,8 +2252,8 @@
                     let addedDate = item.addedAt ? new Date(item.addedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown Date';
 
                     grid.innerHTML += `
-                        <div class="watchlist-card" style="z-index: 10;">
-                            <img class="grid-item" style="cursor:pointer; position: relative; z-index: 20;" onclick="showFilmDetails('${item.filmId}', '${escapeHtml(item.title)}', '${poster}')" src="${poster}" onerror="this.src='https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster'">
+                        <div class="watchlist-card">
+                            <img class="grid-item" style="cursor:pointer;" onclick="showFilmDetails('${item.filmId}', '${escapeHtml(item.title)}', '${poster}')" src="${poster}" onerror="this.src='https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster'">
                             <div class="watchlist-title">${escapeHtml(item.title)} ${yearStr}</div>
                             <div class="watchlist-meta">Added ${addedDate}</div>
                         </div>
