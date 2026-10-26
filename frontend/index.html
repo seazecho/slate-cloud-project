@@ -1333,6 +1333,53 @@
                     background: #141414;
                     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
                 }
+
+                /* -------------------------------------------------------------------------
+           Friend Search Bar UI
+        -------------------------------------------------------------------------- */
+                .friend-search-bar {
+                    align-items: center;
+                    gap: 12px;
+                    margin-bottom: 24px;
+                    background: var(--surface-color);
+                    padding: 16px;
+                    border-radius: var(--radius-lg);
+                    border: 1px solid var(--border-color);
+                    box-shadow: var(--shadow-card);
+                }
+
+                .friend-search-input {
+                    flex-grow: 1;
+                    background: var(--surface-alt);
+                    border: 1px solid var(--border-color);
+                    border-radius: var(--radius-md);
+                    padding: 10px 14px;
+                    color: var(--text-primary);
+                    outline: none;
+                    font-size: 14px;
+                    transition: border-color 0.2s;
+                }
+
+                .friend-search-input:focus {
+                    border-color: var(--accent-green);
+                }
+
+                .btn-search {
+                    background: var(--surface-alt);
+                    color: var(--text-primary);
+                    border: 1px solid var(--border-color);
+                    padding: 10px 20px;
+                    border-radius: var(--radius-md);
+                    font-size: 13px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+
+                .btn-search:hover {
+                    background: #374151;
+                    border-color: var(--border-focus);
+                }
             </style>
 
             <!-- Profile Logs are rendered as full Feed Cards here -->
@@ -1350,7 +1397,8 @@
                 <input type="text" id="friendSearchInput" class="friend-search-input"
                     placeholder="Find friends by username...">
                 <button class="btn-search"
-                    onclick="openProfile(document.getElementById('friendSearchInput').value.trim())">Search</button>
+                    onclick="openProfile(document.getElementById('friendSearchInput').value.trim())">Search
+                    User</button>
             </div>
             <div id="feedList">
                 <div class="empty-feed-state" id="feedLoadingState">Loading circle feed...</div>
