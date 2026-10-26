@@ -11,6 +11,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
+        /* Review Clamp */
+        .review-clamp {
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            white-space: pre-wrap;
+        }
+
+        /* Horizontal Scrollbar for Calendar Day List */
+        .horizontal-scroller::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .horizontal-scroller::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 4px;
+        }
+
         :root {
             --bg-color: #121212;
             --surface-color: #1e1e1e;
@@ -1397,6 +1416,20 @@
         </div>
     </div>
 
+    <!-- Calendar Day Deep View Modal -->
+    <div id="calendarDayModal" class="modal-overlay" onclick="if(event.target===this) this.style.display='none'">
+        <div class="modal-content" style="max-width: 800px; padding: 24px;">
+            <button class="modal-close"
+                onclick="document.getElementById('calendarDayModal').style.display='none'">✕</button>
+            <h2 id="calendarDayTitle" style="color:var(--text-primary); margin-bottom: 20px; font-weight:700;">Films
+                Watched</h2>
+            <div id="calendarDayList" class="horizontal-scroller"
+                style="display: flex; gap: 16px; overflow-x: auto; padding-bottom: 16px;">
+                <!-- Dynamically injected horizontal list -->
+            </div>
+        </div>
+    </div>
+
     <script>
         // CRITICAL RULE: Preserve exact API_BASE
         const API_BASE = "https://func-slate-app-wijb3v.azurewebsites.net/api";
@@ -1745,6 +1778,9 @@
         // -------------------------------------------------------------------------
         // Side-by-Side Feed Generator (With Delete Button)
         // -------------------------------------------------------------------------
+        // -------------------------------------------------------------------------
+        // Side-by-Side Feed Generator (With Private Notes & Read More)
+        // -------------------------------------------------------------------------
         function createInstaCardElement(item) {
             const card = document.createElement('article');
             card.className = 'insta-card';
@@ -1762,10 +1798,20 @@
             if (!posterSrc) posterSrc = 'https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster';
 
             const starsHtml = item.rating ? buildStarDisplay(item.rating) : '';
-            const captionBody = item.review || "";
 
-            // SECURITY: Only show the delete button if this is your post
+            // Text Clamping & Read More Logic
+            let reviewHtml = '';
+            if (item.review) {
+                const isLong = item.review.length > 200;
+                reviewHtml = `
+                    <div id="review-${item.id}" class="review-clamp" style="font-size: 14px; line-height: 1.5; color: var(--text-primary); margin-top: 12px;">${escapeHtml(item.review)}</div>
+                    ${isLong ? `<span style="color:var(--text-muted); cursor:pointer; font-size:12px; font-weight:600; display:inline-block; margin-top:4px;" onclick="document.getElementById('review-${item.id}').classList.toggle('review-clamp'); this.innerText = this.innerText === 'Read more' ? 'Show less' : 'Read more';">Read more</span>` : ''}
+                `;
+            }
+
+            // Private Note Injection (Matching GUIDs)
             const isOwner = (item.userId === currentUserId || item.ownerId === currentUserId);
+            const privateNoteHtml = (isOwner && item.privateNote) ? `<div class="private-note-display">🔒 <b>Private:</b> ${escapeHtml(item.privateNote)}</div>` : '';
             const deleteBtnHtml = isOwner ? `<button onclick="deleteMyLog('${item.id}', this)" style="background:transparent; border:none; cursor:pointer; font-size:16px; opacity:0.6; margin-left:auto;" title="Delete Log">🗑️</button>` : '';
 
             card.innerHTML = `
@@ -1784,7 +1830,8 @@
                     <div class="insta-body">
                         <div style="font-size:18px; font-weight:700; color: var(--text-primary); margin-bottom: 4px;">${escapeHtml(title)} ${year}</div>
                         ${starsHtml}
-                        ${captionBody ? `<div style="font-size: 14px; line-height: 1.5; color: var(--text-primary); margin-top: 12px;">${escapeHtml(captionBody)}</div>` : ''}
+                        ${reviewHtml}
+                        ${privateNoteHtml}
                     </div>
                     <div class="insta-footer">
                         <div style="color: var(--text-muted); font-size: 12px; margin-bottom: 8px;">View Comments...</div>
@@ -1985,21 +2032,38 @@
             if (tabName === 'network') loadNetwork();
         }
 
-        // Network Logic
+        // -------------------------------------------------------------------------
+        // Network Logic (Fetches Real Usernames)
+        // -------------------------------------------------------------------------
         async function loadNetwork() {
             const list = document.getElementById('followingList');
-            list.innerHTML = '';
+            list.innerHTML = '<div style="color:var(--text-muted);">Loading network...</div>';
             if (myFollowing.length === 0) {
                 list.innerHTML = '<div style="color:var(--text-muted);">You are not following anyone yet. Search for friends in the feed!</div>';
                 return;
             }
-            myFollowing.forEach(id => {
-                list.innerHTML += `
-                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:var(--surface-alt); border-radius:8px;">
-                        <span style="color:var(--text-primary); font-weight:600; font-family:monospace;">User ID: ${id.substring(0, 8)}...</span>
-                        <button class="btn-cancel" style="color:#ef4444;" onclick="executeFollowToggle('${id}', this); this.parentElement.style.display='none';">Unfollow</button>
-                    </div>`;
-            });
+            try {
+                const res = await fetch(`${API_BASE}/getNetworkProfiles`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: myFollowing })
+                });
+                const profiles = await res.json();
+                list.innerHTML = '';
+                profiles.forEach(prof => {
+                    const initial = prof.username.charAt(0).toUpperCase();
+                    list.innerHTML += `
+                        <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:var(--surface-alt); border-radius:8px;">
+                            <div style="display:flex; align-items:center; gap:12px; cursor:pointer;" onclick="openProfile('${escapeHtml(prof.username)}')">
+                                <div class="insta-avatar">${initial}</div>
+                                <span style="color:var(--text-primary); font-weight:600; font-size:15px;">${escapeHtml(prof.username)}</span>
+                            </div>
+                            <button class="btn-cancel" style="color:#ef4444;" onclick="executeFollowToggle('${prof.id}', this); this.parentElement.style.display='none';">Unfollow</button>
+                        </div>`;
+                });
+            } catch (e) {
+                list.innerHTML = '<div style="color:#ef4444;">Failed to load network.</div>';
+            }
         }
 
         // Nuke Data Trigger
@@ -2068,7 +2132,7 @@
         }
 
         // -------------------------------------------------------------------------
-        // Calendar (Big Empty Numbers & Contained Posters)
+        // Calendar & Horizontal Click-to-View Logic
         // -------------------------------------------------------------------------
         async function loadCalendar() {
             const grid = document.getElementById('calendarGrid');
@@ -2093,6 +2157,9 @@
                 const logs = await res.json();
                 const logsByDay = {};
 
+                // Store globally so the modal can access it
+                window.calendarData = {};
+
                 if (Array.isArray(logs)) {
                     logs.forEach(log => {
                         const dayStr = log.loggedAt ? log.loggedAt.split('T')[0] : log.createdAt.split('T')[0];
@@ -2115,26 +2182,50 @@
                     const dayLogs = logsByDay[dayStr] || [];
 
                     if (dayLogs.length === 0) {
-                        // Empty Day: Big centered number
                         grid.innerHTML += `<div class="calendar-cell empty-day"><span class="calendar-date">${i}</span></div>`;
                     } else {
-                        // Active Day: Tiny number top left, evenly distributed posters
+                        // Store the data for this day
+                        window.calendarData[dayStr] = dayLogs;
+
                         let postersHtml = dayLogs.slice(0, 4).map(l => {
                             let p = l.posterPath || l.thumbUrl || '';
                             if (p && !p.startsWith('http')) p = `https://image.tmdb.org/t/p/w500${p}`;
-                            return `<img class="calendar-mini-poster" style="cursor:pointer;" onclick="showFilmDetails('${l.filmId}', '${escapeHtml(l.filmTitle)}', '${p}')" src="${p}" onerror="this.style.display='none'">`;
+                            return `<img class="calendar-mini-poster" src="${p}" onerror="this.style.display='none'">`;
                         }).join('');
 
+                        // Added cursor:pointer and onclick logic
                         grid.innerHTML += `
-                            <div class="calendar-cell active-day">
+                            <div class="calendar-cell active-day" style="cursor:pointer;" onclick="openCalendarDay('${dayStr}')">
                                 <span class="calendar-date">${i}</span>
                                 <div class="calendar-posters">${postersHtml}</div>
-                                ${dayLogs.length > 2 ? `<div style="text-align:center; font-size:10px; color:var(--accent-green);">+${dayLogs.length - 2} more</div>` : ''}
+                                ${dayLogs.length > 4 ? `<div style="text-align:center; font-size:10px; color:var(--accent-green);">+${dayLogs.length - 4} more</div>` : ''}
                             </div>
                         `;
                     }
                 }
             } catch (err) { }
+        }
+
+        // Deep View for Calendar Day
+        function openCalendarDay(dayStr) {
+            const logs = window.calendarData[dayStr];
+            if (!logs) return;
+
+            const dateDisplay = new Date(dayStr).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('calendarDayTitle').innerText = `Watched on ${dateDisplay}`;
+
+            const list = document.getElementById('calendarDayList');
+            list.innerHTML = logs.map(l => {
+                let p = l.posterPath || l.thumbUrl || '';
+                if (p && !p.startsWith('http')) p = `https://image.tmdb.org/t/p/w500${p}`;
+                return `
+                    <div style="flex: 0 0 140px; display:flex; flex-direction:column; gap:8px;">
+                        <img src="${p}" style="width:140px; aspect-ratio:2/3; object-fit:contain; border-radius:6px; background:#141414; cursor:pointer;" onclick="showFilmDetails('${l.filmId}', '${escapeHtml(l.filmTitle)}', '${p}')" onerror="this.src='https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster'">
+                        <span style="font-size:12px; font-weight:600; color:var(--text-primary); text-align:center;">${escapeHtml(l.filmTitle)}</span>
+                    </div>`;
+            }).join('');
+
+            document.getElementById('calendarDayModal').style.display = 'flex';
         }
 
         // Fix Recap Stats Display

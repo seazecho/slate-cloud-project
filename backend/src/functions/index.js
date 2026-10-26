@@ -292,18 +292,21 @@ app.http('getFeed', {
       // FIX: Sort exactly by the moment they pressed "Log Film" (createdAt), newest first
       directLogs.sort((a, b) => new Date(b.createdAt || b.loggedAt) - new Date(a.createdAt || a.loggedAt));
 
+      // 4. Map the raw logs into the exact format the frontend expects
       const formattedFeed = directLogs.slice(0, 50).map(log => ({
         id: log.id,
-        ownerId: log.username || log.userId,
-        userId: log.username || log.userId,
+        ownerId: log.userId, // FIX: Keep the GUID for security checks
+        userId: log.userId,  // FIX: Keep the GUID for Private Note checks
+        username: log.username, // Explicitly pass the display name
         filmId: log.filmId,
         filmTitle: log.filmTitle,
         year: log.year,
         posterPath: log.posterPath || log.thumbUrl,
         rating: log.rating,
         review: log.review,
-        createdAt: log.createdAt || log.loggedAt, // Pass exact creation time
-        loggedAt: log.loggedAt // Pass watched time
+        privateNote: log.privateNote, // FIX: Actually pass the private note to the frontend!
+        createdAt: log.createdAt || log.loggedAt,
+        loggedAt: log.loggedAt
       }));
 
       return { status: 200, headers: { 'Content-Type': 'application/json' }, jsonBody: formattedFeed };
@@ -851,3 +854,26 @@ app.http('deleteLog', {
     }
   }
 });
+
+// -----------------------------------------------------------------------------
+// 18. getNetworkProfiles (HTTP POST)
+// -----------------------------------------------------------------------------
+app.http('getNetworkProfiles', {
+  methods: ['POST'],
+  authLevel: 'anonymous',
+  handler: async (request, context) => {
+    try {
+      const body = await request.json();
+      const ids = body.ids || [];
+      if (ids.length === 0) return { status: 200, jsonBody: [] };
+
+      const quotedIds = ids.map(id => `'${id}'`).join(',');
+      const db = getCosmosDatabase();
+      const { resources } = await db.container('users').items.query(`SELECT c.id, c.username FROM c WHERE c.id IN (${quotedIds})`).fetchAll();
+
+      return { status: 200, jsonBody: resources };
+    } catch (err) {
+      return { status: 500, jsonBody: { error: 'Failed to fetch network profiles.' } };
+    }
+  }
+}); 
