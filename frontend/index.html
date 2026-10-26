@@ -1733,6 +1733,9 @@
         // -------------------------------------------------------------------------
         // Side-by-Side Feed Generator (Sorts by Logged Date)
         // -------------------------------------------------------------------------
+        // -------------------------------------------------------------------------
+        // Side-by-Side Feed Generator (With Delete Button)
+        // -------------------------------------------------------------------------
         function createInstaCardElement(item) {
             const card = document.createElement('article');
             card.className = 'insta-card';
@@ -1741,7 +1744,6 @@
             const title = item.filmTitle || item.title || "Untitled Film";
             const year = item.year ? `(${item.year})` : '';
 
-            // Handle Dates: Logged Date vs Watched Date
             const loggedAgo = getRelativeTime(item.createdAt);
             const watchedDateObj = item.loggedAt ? new Date(item.loggedAt) : new Date(item.createdAt);
             const watchedStr = watchedDateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
@@ -1753,7 +1755,10 @@
             const starsHtml = item.rating ? buildStarDisplay(item.rating) : '';
             const captionBody = item.review || "";
 
-            // Left Side: Poster | Right Side: Details
+            // SECURITY: Only show the delete button if this is your post
+            const isOwner = (item.userId === currentUserId || item.ownerId === currentUserId);
+            const deleteBtnHtml = isOwner ? `<button onclick="deleteMyLog('${item.id}', this)" style="background:transparent; border:none; cursor:pointer; font-size:16px; opacity:0.6; margin-left:auto;" title="Delete Log">🗑️</button>` : '';
+
             card.innerHTML = `
                 <div class="insta-media-left">
                     <img src="${posterSrc}" alt="${escapeHtml(title)}" style="cursor: pointer;" onclick="showFilmDetails('${item.filmId}', '${escapeHtml(title)}', '${posterSrc}')" onerror="this.src='https://via.placeholder.com/500x750/141414/ffffff?text=No+Poster'">
@@ -1765,6 +1770,7 @@
                             <span class="insta-username clickable-user" onclick="openProfile('${escapeHtml(username)}')">${escapeHtml(username)}</span>
                             <span class="insta-date-meta">Logged ${loggedAgo} • Watched ${watchedStr}</span>
                         </div>
+                        ${deleteBtnHtml}
                     </div>
                     <div class="insta-body">
                         <div style="font-size:18px; font-weight:700; color: var(--text-primary); margin-bottom: 4px;">${escapeHtml(title)} ${year}</div>
@@ -1781,6 +1787,33 @@
                 </div>
             `;
             return card;
+        }
+        // -------------------------------------------------------------------------
+        // Delete Log Function
+        // -------------------------------------------------------------------------
+        async function deleteMyLog(logId, btnElement) {
+            if (!confirm("Are you sure you want to delete this log?")) return;
+
+            // Optimistically hide the card so the UI feels instant
+            const card = btnElement.closest('.insta-card');
+            card.style.display = 'none';
+
+            try {
+                const authRes = await fetch('/.auth/me');
+                const payload = await authRes.json();
+                const encodedPrincipal = btoa(JSON.stringify(payload.clientPrincipal));
+
+                const res = await fetch(`${API_BASE}/deleteLog`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json', 'x-ms-client-principal': encodedPrincipal },
+                    body: JSON.stringify({ logId })
+                });
+
+                if (!res.ok) throw new Error("Delete failed");
+            } catch (e) {
+                alert("Error deleting log.");
+                card.style.display = 'flex'; // Un-hide if the backend fails
+            }
         }
 
         async function loadFeed() {

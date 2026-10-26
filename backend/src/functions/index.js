@@ -509,8 +509,9 @@ app.http('getUserLogs', {
 
       const db = getCosmosDatabase();
       const querySpec = {
-        query: `SELECT * FROM c WHERE c.userId = @uid ORDER BY c.loggedAt DESC`,
-        parameters: [{ name: '@uid', value: username }]
+        // FIX: Search by username, and make it case-insensitive
+        query: `SELECT * FROM c WHERE LOWER(c.username) = LOWER(@uname) ORDER BY c.loggedAt DESC`,
+        parameters: [{ name: '@uname', value: username }]
       };
 
       const { resources } = await db.container('logs').items.query(querySpec).fetchAll();
@@ -801,7 +802,8 @@ app.http('getUserProfile', {
 
       const db = getCosmosDatabase();
       const { resources } = await db.container('users').items.query({
-        query: `SELECT * FROM c WHERE c.username = @uname`,
+        // FIX: Make search case-insensitive so the Follow button always appears
+        query: `SELECT * FROM c WHERE LOWER(c.username) = LOWER(@uname)`,
         parameters: [{ name: '@uname', value: username }]
       }).fetchAll();
 
@@ -848,6 +850,32 @@ app.http('deleteUserData', {
       return { status: 200, jsonBody: { message: 'Data nuked.' } };
     } catch (err) {
       return { status: 500, jsonBody: { error: 'Nuke failed' } };
+    }
+  }
+});
+
+// -----------------------------------------------------------------------------
+// 17. deleteLog (HTTP DELETE)
+// -----------------------------------------------------------------------------
+app.http('deleteLog', {
+  methods: ['DELETE'],
+  authLevel: 'anonymous',
+  handler: async (request, context) => {
+    try {
+      const principalHeader = request.headers.get('x-ms-client-principal') || request.headers.get('X-MS-CLIENT-PRINCIPAL');
+      if (!principalHeader) return { status: 401 };
+      const userId = JSON.parse(Buffer.from(principalHeader, 'base64').toString('utf8')).userId;
+
+      const body = await request.json();
+      if (!body.logId) return { status: 400, jsonBody: { error: 'logId required' } };
+
+      const db = getCosmosDatabase();
+      // Deletes the specific log. Partition key is userId for security.
+      await db.container('logs').item(body.logId, userId).delete();
+
+      return { status: 200, jsonBody: { message: 'Log deleted successfully' } };
+    } catch (err) {
+      return { status: 500, jsonBody: { error: 'Delete failed' } };
     }
   }
 });
