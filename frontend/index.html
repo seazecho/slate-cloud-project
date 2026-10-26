@@ -2102,7 +2102,11 @@
                 } else {
                     followBtn.style.display = 'block';
                     followBtn.onclick = () => executeFollowToggle(targetProfile.id, followBtn);
-                    if (myFollowing.includes(targetProfile.id)) {
+
+                    // FIX: Ensure myFollowing is an array before checking it to prevent the freeze
+                    const safeFollowingList = Array.isArray(myFollowing) ? myFollowing : [];
+
+                    if (safeFollowingList.includes(targetProfile.id)) {
                         followBtn.innerText = 'Following'; followBtn.classList.add('active-following');
                     } else {
                         followBtn.innerText = 'Follow'; followBtn.classList.remove('active-following');
